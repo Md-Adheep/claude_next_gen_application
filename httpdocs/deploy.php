@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $token = $_SERVER['HTTP_X_DEPLOY_TOKEN'] ?? '';
 if (!hash_equals(DEPLOY_SECRET, $token)) {
     http_response_code(403);
-    writeLog('BLOCKED', 'Invalid token from ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+    writeLog('BLOCKED', 'Invalid token: "' . $token . '" from ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
     die(json_encode(['error' => 'Unauthorized']));
 }
 
@@ -30,7 +30,26 @@ $pusher  = $payload['pusher'] ?? 'unknown';
 
 writeLog('DEPLOY_START', "Branch: $branch | Commit: $commit | By: $pusher");
 
-// ── Find git repo root (could be httpdocs or one level up) ───
+// ── Find git binary ───────────────────────────────────────────
+$gitBin = trim((string)shell_exec('which git 2>/dev/null'))
+       ?: trim((string)shell_exec('command -v git 2>/dev/null'));
+
+if (!$gitBin) {
+    foreach (['/usr/bin/git', '/usr/local/bin/git', '/opt/plesk/git/bin/git'] as $p) {
+        if (file_exists($p)) { $gitBin = $p; break; }
+    }
+}
+
+if (!$gitBin) {
+    http_response_code(500);
+    $msg = 'git not found in PATH. PATH=' . getenv('PATH');
+    writeLog('ERROR', $msg);
+    die(json_encode(['success' => false, 'error' => $msg]));
+}
+
+writeLog('INFO', "Using git: $gitBin");
+
+// ── Find git repo root ────────────────────────────────────────
 $repoDir = __DIR__;
 if (!is_dir($repoDir . '/.git') && is_dir(dirname($repoDir) . '/.git')) {
     $repoDir = dirname($repoDir);
@@ -38,26 +57,20 @@ if (!is_dir($repoDir . '/.git') && is_dir(dirname($repoDir) . '/.git')) {
 
 if (!is_dir($repoDir . '/.git')) {
     http_response_code(500);
-    $msg = 'Git repo not found. Run: cd ' . $repoDir . ' && git init && git remote add origin YOUR_REPO_URL && git pull origin main';
+    $msg = 'Git repo not found at: ' . $repoDir . ' or ' . dirname($repoDir);
     writeLog('ERROR', $msg);
     die(json_encode(['success' => false, 'error' => $msg]));
 }
 
-// ── Check exec availability ───────────────────────────────────
-if (!function_exists('exec') && !function_exists('shell_exec')) {
-    http_response_code(500);
-    $msg = 'exec() and shell_exec() are both disabled. Enable one in Plesk PHP settings.';
-    writeLog('ERROR', $msg);
-    die(json_encode(['success' => false, 'error' => $msg]));
-}
+writeLog('INFO', "Repo dir: $repoDir");
 
-// ── Run git commands synchronously (NO & background) ─────────
-$dir    = escapeshellarg($repoDir);
-$branch = escapeshellarg(DEPLOY_BRANCH);
+// ── Run git commands ──────────────────────────────────────────
+$dir = escapeshellarg($repoDir);
+$git = escapeshellarg($gitBin);
 
 $commands = [
-    "cd $dir && git fetch origin 2>&1",
-    "cd $dir && git reset --hard origin/" . DEPLOY_BRANCH . " 2>&1",
+    "cd $dir && HOME=/tmp $git fetch origin 2>&1",
+    "cd $dir && HOME=/tmp $git reset --hard origin/" . DEPLOY_BRANCH . " 2>&1",
 ];
 
 $output  = [];
@@ -71,22 +84,22 @@ foreach ($commands as $cmd) {
         exec($cmd, $result, $exitCode);
         $line = implode("\n", $result);
     } else {
-        $line     = shell_exec($cmd) ?? '';
+        $line     = (string)(shell_exec($cmd) ?? '');
         $exitCode = 0;
     }
 
     $output[] = trim($line);
-    writeLog('CMD', "$cmd\nExit: $exitCode\n$line");
+    writeLog('CMD', "Exit:$exitCode | $cmd\n$line");
 
     if ($exitCode !== 0) {
         $success = false;
-        writeLog('ERROR', "Command failed (exit $exitCode): $cmd\n$line");
+        writeLog('ERROR', "Failed (exit $exitCode): $line");
         break;
     }
 }
 
 $fullOutput = implode("\n", $output);
-writeLog($success ? 'DEPLOY_OK' : 'DEPLOY_FAILED', "Commit: $commit\n$fullOutput");
+writeLog($success ? 'DEPLOY_OK' : 'DEPLOY_FAILED', $fullOutput);
 
 http_response_code($success ? 200 : 500);
 echo json_encode([
