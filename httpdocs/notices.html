@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notices · NextGen Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple:#7C3AED; --purple-lt:#8B5CF6; --purple-bg:#F5F3FF; --purple-soft:#EDE9FE;
+  --teal:#06B6D4; --teal-bg:#ECFEFF; --orange:#F97316; --orange-bg:#FFF7ED;
+  --green:#10B981; --green-bg:#ECFDF5; --red:#EF4444;
+  --bg:#F4F0FB; --white:#FFFFFF; --text:#1E1B4B; --text2:#6B7280; --text3:#9CA3AF;
+  --border:#F3F4F6; --sidebar-w:220px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);display:flex;}
+::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:10px;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--white);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;box-shadow:4px 0 20px rgba(124,58,237,0.07);overflow-y:auto;overflow-x:hidden;}
+.sb-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--purple-lt));display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;box-shadow:0 4px 12px rgba(124,58,237,0.3);}
+.sb-logo h2{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;color:var(--purple);}
+.sb-nav{padding:12px 10px;flex:1;}
+.sb-group{margin-bottom:2px;}
+.sb-group-header{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:10px;cursor:pointer;transition:all 0.18s;font-size:13px;font-weight:700;color:var(--text2);}
+.sb-group-header:hover{background:var(--purple-bg);color:var(--purple);}
+.sb-group-header.active-group{color:var(--purple);}
+.gh-left{display:flex;align-items:center;gap:9px;}
+.gh-icon{font-size:14px;width:16px;text-align:center;}
+.gh-arrow{font-size:9px;transition:transform 0.25s;color:var(--text3);}
+.sb-group-header.open .gh-arrow{transform:rotate(180deg);}
+.sb-children{padding-left:14px;max-height:0;overflow:hidden;transition:max-height 0.3s ease;}
+.sb-children.open{max-height:300px;}
+.sb-child{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;transition:all 0.16s;text-decoration:none;position:relative;}
+.sb-child:hover{color:var(--purple);background:var(--purple-bg);}
+.sb-child.active{color:var(--purple);background:var(--purple-bg);}
+.sb-child.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:16px;border-radius:0 3px 3px 0;background:var(--purple);}
+.sb-single{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all 0.16s;text-decoration:none;margin-bottom:1px;position:relative;}
+.sb-single:hover{background:var(--purple-bg);color:var(--purple);}
+.sb-single.active{background:var(--purple-bg);color:var(--purple);}
+.sb-single.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:16px;border-radius:0 3px 3px 0;background:var(--purple);}
+.s-icon{font-size:14px;width:16px;text-align:center;}
+
+/* MAIN */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:62px;flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 26px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(124,58,237,0.05);}
+.search-bar{flex:1;max-width:360px;position:relative;}
+.search-bar input{width:100%;background:#F9FAFB;border:1.5px solid var(--border);border-radius:12px;padding:9px 14px 9px 38px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color 0.2s;}
+.search-bar input:focus{border-color:var(--purple-lt);}
+.search-bar input::placeholder{color:var(--text3);}
+.search-bar svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);width:14px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-icon-btn{width:36px;height:36px;border-radius:10px;background:#F9FAFB;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all 0.18s;}
+.tb-icon-btn:hover{border-color:var(--purple-lt);background:var(--purple-bg);}
+.tb-profile{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 5px;background:#F9FAFB;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;}
+.tb-av{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--purple),#06B6D4);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+.tb-info span{display:block;font-size:12.5px;font-weight:700;line-height:1.2;}
+.tb-info small{font-size:11px;color:var(--text3);}
+
+/* PAGE */
+.page{flex:1;overflow-y:auto;padding:22px 26px;}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:12px;}
+.page-title{font-family:'Poppins',sans-serif;font-size:21px;font-weight:700;}
+.page-sub{font-size:13px;color:var(--text3);margin-top:3px;}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+.filter-bar .sb{flex:1;min-width:200px;position:relative;}
+.filter-bar .sb svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);width:14px;}
+.filter-bar .sb input{width:100%;background:var(--white);border:1.5px solid #E5E7EB;border-radius:10px;padding:9px 14px 9px 36px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;}
+.filter-bar select{background:var(--white);border:1.5px solid #E5E7EB;border-radius:10px;padding:9px 14px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text2);outline:none;cursor:pointer;}
+.count-tag{font-size:12.5px;color:var(--text3);font-weight:700;margin-left:auto;}
+
+/* NOTICES GRID */
+.notices-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.notice-card{background:var(--white);border-radius:14px;padding:20px 22px;box-shadow:0 2px 10px rgba(0,0,0,0.04);border-left:4px solid var(--border);transition:transform 0.18s,box-shadow 0.18s;animation:fu 0.4s ease both;}
+.notice-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(124,58,237,0.1);}
+.notice-card.high{border-left-color:var(--red);}
+.notice-card.normal{border-left-color:var(--purple);}
+.notice-card.low{border-left-color:var(--teal);}
+.nc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.nc-title{font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;line-height:1.4;flex:1;}
+.nc-actions{display:flex;gap:6px;flex-shrink:0;}
+.nc-body{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:14px;}
+.nc-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.nc-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.nc-meta{font-size:11.5px;color:var(--text3);text-align:right;}
+.priority-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.p-high{background:rgba(239,68,68,0.1);color:var(--red);}
+.p-normal{background:rgba(124,58,237,0.1);color:var(--purple);}
+.p-low{background:rgba(6,182,212,0.1);color:var(--teal);}
+.target-pill{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;background:#F3F4F6;color:var(--text2);}
+
+/* BUTTONS */
+.btn-add{background:var(--purple);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all 0.2s;white-space:nowrap;box-shadow:0 4px 14px rgba(124,58,237,0.25);}
+.btn-add:hover{background:var(--purple-lt);}
+.icon-btn{width:27px;height:27px;border-radius:7px;background:#F3F4F6;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;transition:all 0.18s;color:var(--text3);}
+.icon-btn.edit:hover{background:var(--purple-bg);color:var(--purple);}
+.icon-btn.del:hover{background:rgba(239,68,68,0.1);color:var(--red);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:70px 20px;grid-column:1/-1;}
+.empty-state .em-icon{font-size:52px;margin-bottom:14px;}
+.empty-state h3{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;}
+.empty-state p{font-size:13px;color:var(--text3);}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(15,10,40,0.45);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.overlay.show{display:flex;}
+.modal{background:var(--white);border-radius:18px;width:520px;max-width:94vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.18);animation:fu 0.3s ease both;}
+.modal-head{padding:20px 24px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.modal-head h3{font-family:'Poppins',sans-serif;font-size:16px;font-weight:600;}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3);padding:4px 8px;border-radius:6px;}
+.modal-close:hover{background:#F3F4F6;}
+.modal-body{padding:20px 24px;}
+.modal-foot{padding:14px 24px 20px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;}
+.fg input,.fg select,.fg textarea{width:100%;background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:9px;padding:10px 12px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color 0.2s;resize:vertical;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--purple-lt);background:var(--white);}
+.fg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn-cancel{background:#F3F4F6;color:var(--text2);border:none;border-radius:9px;padding:9px 18px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-cancel:hover{background:#E5E7EB;}
+.btn-save{background:var(--purple);color:#fff;border:none;border-radius:9px;padding:9px 20px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(124,58,237,0.25);}
+.btn-save:hover{background:var(--purple-lt);}
+
+/* TOAST */
+.toast{position:fixed;bottom:26px;right:26px;z-index:999;background:var(--white);border-radius:12px;padding:13px 20px;font-size:13px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,0.14);display:flex;align-items:center;gap:9px;animation:fu 0.35s cubic-bezier(0.34,1.56,0.64,1) both;}
+
+.fu{opacity:0;transform:translateY(14px);animation:fu 0.42s cubic-bezier(0.4,0,0.2,1) forwards;}
+@keyframes fu{to{opacity:1;transform:none;}}
+
+.admin-only{display:none;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎓</div>
+    <h2>NextGen</h2>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group">
+      <div class="sb-group-header active-group open" onclick="tog(this)">
+        <div class="gh-left"><span class="gh-icon">🏠</span>Home</div>
+        <span class="gh-arrow">▼</span>
+      </div>
+      <div class="sb-children open">
+        <a class="sb-child" href="dashboard.html">Admin</a>
+        <a class="sb-child" href="users.html">Users</a>
+      </div>
+    </div>
+    <div class="sb-group">
+      <div class="sb-group-header" onclick="tog(this)">
+        <div class="gh-left"><span class="gh-icon">🎓</span>Students</div>
+        <span class="gh-arrow">▼</span>
+      </div>
+      <div class="sb-children">
+        <a class="sb-child" href="students.html">All Students</a>
+      </div>
+    </div>
+    <div class="sb-group">
+      <div class="sb-group-header" onclick="tog(this)">
+        <div class="gh-left"><span class="gh-icon">👨‍🏫</span>Teachers</div>
+        <span class="gh-arrow">▼</span>
+      </div>
+      <div class="sb-children">
+        <a class="sb-child" href="users.html">All Teachers</a>
+        <a class="sb-child" href="users.html">Add Teacher</a>
+      </div>
+    </div>
+    <a class="sb-single" href="#"><span class="s-icon">📚</span>Library</a>
+    <div class="sb-group">
+      <div class="sb-group-header" onclick="tog(this)">
+        <div class="gh-left"><span class="gh-icon">👤</span>Account</div>
+        <span class="gh-arrow">▼</span>
+      </div>
+      <div class="sb-children">
+        <a class="sb-child" href="#">Profile</a>
+        <a class="sb-child" href="settings.html">Settings</a>
+      </div>
+    </div>
+    <a class="sb-single" href="courses.html"><span class="s-icon">🖥️</span>Class</a>
+    <a class="sb-single" href="courses.html"><span class="s-icon">📖</span>Subject</a>
+    <a class="sb-single" href="#"><span class="s-icon">✅</span>Attendance</a>
+    <div class="sb-group">
+      <div class="sb-group-header" onclick="tog(this)">
+        <div class="gh-left"><span class="gh-icon">📝</span>Exam</div>
+        <span class="gh-arrow">▼</span>
+      </div>
+      <div class="sb-children">
+        <a class="sb-child" href="#">Schedule</a>
+        <a class="sb-child" href="#">Results</a>
+      </div>
+    </div>
+    <a class="sb-single active" href="notices.html"><span class="s-icon">📢</span>Notice</a>
+    <a class="sb-single" href="certificates.html"><span class="s-icon">📜</span>Certificates</a>
+  </nav>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="search-bar">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Search notices…" id="searchInput" oninput="renderNotices()">
+    </div>
+    <div class="topbar-right">
+      <div class="tb-icon-btn" onclick="logout()" title="Logout">⏻</div>
+      <div class="tb-profile">
+        <div class="tb-av" id="topAv">…</div>
+        <div class="tb-info">
+          <span id="topName">Loading…</span>
+          <small id="topRole">—</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <div class="page-title fu">📢 Notices</div>
+        <div class="page-sub fu" style="animation-delay:.05s">Announcements &amp; updates for your team</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <select id="fPriority" onchange="renderNotices()" style="background:var(--white);border:1.5px solid #E5E7EB;border-radius:10px;padding:9px 14px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text2);outline:none;cursor:pointer;">
+          <option value="">All Priorities</option>
+          <option value="High">🔴 High</option>
+          <option value="Normal">🟣 Normal</option>
+          <option value="Low">🔵 Low</option>
+        </select>
+        <button class="btn-add" id="btnNewNotice" style="display:none;" onclick="openAdd()">
+          <span style="font-size:16px;">+</span> New Notice
+        </button>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <span class="count-tag" id="noticeCount"></span>
+    </div>
+
+    <div class="notices-grid" id="noticesGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--text3);font-size:13px;">⏳ Loading notices…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>📢 Publish New Notice</h3>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg"><label>Title *</label><input type="text" id="n_title" placeholder="Notice title…"></div>
+      <div class="fg"><label>Message</label><textarea id="n_body" rows="4" placeholder="Write the notice message here…"></textarea></div>
+      <div class="fg-grid">
+        <div class="fg"><label>Priority</label>
+          <select id="n_priority"><option value="High">🔴 High</option><option value="Normal" selected>🟣 Normal</option><option value="Low">🔵 Low</option></select>
+        </div>
+        <div class="fg"><label>Audience</label>
+          <select id="n_target"><option value="All">🌐 Everyone</option><option value="Admin">🛡️ Admin only</option><option value="User">👤 Users only</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn-save" onclick="createNotice()">📢 Publish</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>✏️ Edit Notice</h3>
+      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="e_id">
+      <div class="fg"><label>Title *</label><input type="text" id="e_title"></div>
+      <div class="fg"><label>Message</label><textarea id="e_body" rows="4"></textarea></div>
+      <div class="fg-grid">
+        <div class="fg"><label>Priority</label>
+          <select id="e_priority"><option value="High">🔴 High</option><option value="Normal">🟣 Normal</option><option value="Low">🔵 Low</option></select>
+        </div>
+        <div class="fg"><label>Audience</label>
+          <select id="e_target"><option value="All">🌐 Everyone</option><option value="Admin">🛡️ Admin only</option><option value="User">👤 Users only</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn-save" onclick="updateNotice()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let allNotices=[], currentUser=null;
+const PICONS={High:'🔴',Normal:'🟣',Low:'🔵'};
+const TICONS={All:'🌐',Admin:'🛡️',User:'👤'};
+
+function tog(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open');}
+function logout(){fetch('auth.php?action=logout',{credentials:'include'}).finally(()=>{sessionStorage.clear();location.href='login.html';});}
+function openAdd(){document.getElementById('n_title').value='';document.getElementById('n_body').value='';document.getElementById('n_priority').value='Normal';document.getElementById('n_target').value='All';document.getElementById('addModal').classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+async function loadNotices(){
+  try{
+    const r=await fetch('notices.php?action=list',{credentials:'include'});
+    const j=await r.json();
+    if(!j.success){showApiError(j.message);return;}
+    allNotices=j.data;
+    renderNotices();
+  }catch(err){
+    showApiError('Server connection failed. Make sure the PHP backend is running.');
+  }
+}
+
+function showApiError(msg){
+  document.getElementById('noticesGrid').innerHTML=`
+    <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
+      <div style="font-size:44px;margin-bottom:14px;">🔌</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--red);margin-bottom:8px;">API Connection Error</div>
+      <div style="font-size:13px;color:var(--text3);max-width:360px;margin:0 auto;line-height:1.7;">${escHtml(msg||'Could not connect to the server.')}<br><br>
+      <strong>Check:</strong> PHP server is running, <code>/notices.php</code> exists, and the <code>notices</code> table is in the database.</div>
+    </div>`;
+}
+
+function renderNotices(){
+  const search=document.getElementById('searchInput').value.toLowerCase();
+  const priority=document.getElementById('fPriority').value;
+  let data=allNotices;
+  if(search)   data=data.filter(n=>n.title.toLowerCase().includes(search)||(n.body||'').toLowerCase().includes(search));
+  if(priority) data=data.filter(n=>n.priority===priority);
+
+  document.getElementById('noticeCount').textContent=data.length+' notice'+(data.length!==1?'s':'');
+  const grid=document.getElementById('noticesGrid');
+  const isAdmin=currentUser?.role==='Admin';
+
+  if(!data.length){
+    grid.innerHTML=`<div class="empty-state">
+      <div class="em-icon">📢</div>
+      <h3>No notices found</h3>
+      <p>${isAdmin?'Click "+ New Notice" to publish your first announcement.':'No announcements at this time.'}</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML=data.map((n,i)=>{
+    const pc=n.priority.toLowerCase();
+    const dt=new Date(n.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const adminBtns=isAdmin?`
+      <button class="icon-btn edit" onclick="openEdit(${n.id})" title="Edit">✏️</button>
+      <button class="icon-btn del"  onclick="deleteNotice(${n.id})" title="Delete">🗑️</button>`:'';
+    return `<div class="notice-card ${pc}" style="animation-delay:${i*0.04}s;">
+      <div class="nc-head">
+        <div class="nc-title">${escHtml(n.title)}</div>
+        <div class="nc-actions">${adminBtns}</div>
+      </div>
+      <div class="nc-body">${n.body?escHtml(n.body).replace(/\n/g,'<br>'):'<span style="color:#C4C4C4;font-style:italic;">No message.</span>'}</div>
+      <div class="nc-footer">
+        <div class="nc-tags">
+          <span class="priority-pill p-${pc}">${PICONS[n.priority]} ${n.priority}</span>
+          <span class="target-pill">${TICONS[n.target]||'🌐'} ${n.target}</span>
+        </div>
+        <div class="nc-meta"><div>${escHtml(n.created_by_name||'Admin')}</div><div>${dt}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function createNotice(){
+  const title=document.getElementById('n_title').value.trim();
+  if(!title){showToast('⚠️ Title is required','#FEF3C7','#92400E');return;}
+  const r=await fetch('notices.php?action=create',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({title,body:document.getElementById('n_body').value,
+      priority:document.getElementById('n_priority').value,target:document.getElementById('n_target').value})});
+  const j=await r.json();
+  if(j.success){closeModal('addModal');loadNotices();showToast('📢 Notice published!','#D1FAE5','#065F46');}
+  else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+
+function openEdit(id){
+  const n=allNotices.find(x=>x.id===id);
+  document.getElementById('e_id').value=id;
+  document.getElementById('e_title').value=n.title;
+  document.getElementById('e_body').value=n.body||'';
+  document.getElementById('e_priority').value=n.priority;
+  document.getElementById('e_target').value=n.target;
+  document.getElementById('editModal').classList.add('show');
+}
+async function updateNotice(){
+  const id=document.getElementById('e_id').value;
+  const title=document.getElementById('e_title').value.trim();
+  if(!title){showToast('⚠️ Title is required','#FEF3C7','#92400E');return;}
+  const r=await fetch('notices.php?action=update',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id,title,body:document.getElementById('e_body').value,
+      priority:document.getElementById('e_priority').value,target:document.getElementById('e_target').value})});
+  const j=await r.json();
+  if(j.success){closeModal('editModal');loadNotices();showToast('✅ Notice updated','#D1FAE5','#065F46');}
+  else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+async function deleteNotice(id){
+  if(!confirm('Delete this notice?'))return;
+  const r=await fetch('notices.php?action=delete',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const j=await r.json();
+  if(j.success){loadNotices();showToast('🗑️ Notice deleted','#FEF2F2','#991B1B');}
+  else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+
+function showToast(msg,bg,color){
+  const old=document.querySelector('.toast');if(old)old.remove();
+  const t=document.createElement('div');t.className='toast';
+  t.style.cssText=`background:${bg};color:${color};border:1.5px solid ${color}44;`;
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},4000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+(async()=>{
+  try{
+    const r=await fetch('auth.php?action=me',{credentials:'include'});
+    const j=await r.json();
+    if(!j.success){location.href='login.html';return;}
+    currentUser=j.data;
+    sessionStorage.setItem('ng_user',JSON.stringify(currentUser));
+    const ini=currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('topAv').textContent=ini;
+    document.getElementById('topName').textContent=currentUser.name;
+    document.getElementById('topRole').textContent=currentUser.role;
+    if(currentUser.role==='Admin'){
+      document.querySelectorAll('.admin-only').forEach(el=>el.classList.remove('admin-only'));
+      const btn=document.getElementById('btnNewNotice');
+      if(btn) btn.style.display='flex';
+    }
+    loadNotices();
+  }catch(e){location.href='login.html';}
+})();
+</script>
+</body>
+</html>

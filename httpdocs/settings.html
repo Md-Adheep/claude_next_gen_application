@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings · NextGen Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7C3AED;--purple-lt:#8B5CF6;--purple-bg:#F5F3FF;--purple-soft:#EDE9FE;--teal:#06B6D4;--teal-bg:#ECFEFF;--orange:#F97316;--orange-bg:#FFF7ED;--green:#10B981;--green-bg:#ECFDF5;--red:#EF4444;--bg:#F4F0FB;--white:#FFFFFF;--text:#1E1B4B;--text2:#6B7280;--text3:#9CA3AF;--border:#F3F4F6;--sidebar-w:230px;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);display:flex;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:10px;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--white);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;box-shadow:4px 0 20px rgba(124,58,237,0.07);overflow-y:auto;}
+.sb-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--purple-lt));display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;box-shadow:0 4px 12px rgba(124,58,237,0.3);}
+.sb-logo h2{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;color:var(--purple);}
+.sb-nav{padding:12px 10px;flex:1;}
+.sb-label{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;padding:10px 11px 4px;}
+.sb-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .16s;text-decoration:none;margin-bottom:2px;position:relative;}
+.sb-link:hover{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--purple);}
+.s-icon{font-size:14px;width:16px;text-align:center;}
+.sidebar-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.user-av{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;}
+.user-info-text h4{font-size:13px;font-weight:700;}
+.user-info-text p{font-size:11px;color:var(--text3);}
+.logout-btn{margin-left:auto;background:none;border:none;font-size:17px;cursor:pointer;color:var(--text3);transition:color .2s;}
+.logout-btn:hover{color:var(--red);}
+
+/* MAIN */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:62px;flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 26px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(124,58,237,0.05);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-av{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;}
+.tb-name{font-size:13px;font-weight:700;}
+.tb-role{font-size:11px;color:var(--text3);}
+
+/* PAGE */
+.page{flex:1;overflow-y:auto;padding:24px 28px;}
+.page-header{margin-bottom:24px;}
+.page-title{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;}
+.page-sub{font-size:13px;color:var(--text3);margin-top:3px;}
+
+/* SETTINGS LAYOUT */
+.settings-layout{display:flex;gap:20px;align-items:flex-start;}
+.settings-nav{width:200px;flex-shrink:0;background:var(--white);border-radius:14px;padding:10px;box-shadow:0 2px 10px rgba(0,0,0,0.04);position:sticky;top:0;}
+.sn-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .16s;margin-bottom:2px;}
+.sn-item:hover{background:var(--purple-bg);color:var(--purple);}
+.sn-item.active{background:var(--purple-bg);color:var(--purple);}
+.sn-item .sn-icon{font-size:15px;width:18px;text-align:center;}
+.settings-content{flex:1;}
+
+/* CARD */
+.s-card{background:var(--white);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,0.04);margin-bottom:20px;overflow:hidden;display:none;}
+.s-card.active{display:block;}
+.s-card-head{padding:18px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.s-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.s-card-head h3{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;}
+.s-card-head p{font-size:12px;color:var(--text3);margin-top:2px;}
+.s-card-body{padding:22px 24px;}
+
+/* FORM */
+.fg{margin-bottom:16px;}
+.fg label{display:block;font-size:12.5px;font-weight:700;color:var(--text2);margin-bottom:6px;}
+.fg input,.fg select,.fg textarea{width:100%;background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:10px;padding:10px 14px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.fg input:focus,.fg select:focus{border-color:var(--purple-lt);background:var(--white);}
+.fg .hint{font-size:11px;color:var(--text3);margin-top:4px;}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.divider{height:1px;background:var(--border);margin:20px 0;}
+
+/* BUTTONS */
+.btn-save{background:var(--purple);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(124,58,237,0.25);}
+.btn-save:hover{background:var(--purple-lt);}
+.btn-save:disabled{opacity:0.6;cursor:not-allowed;}
+.btn-test{background:var(--teal-bg);color:var(--teal);border:1.5px solid var(--teal);border-radius:10px;padding:10px 20px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-test:hover{background:var(--teal);color:#fff;}
+.btn-row{display:flex;align-items:center;gap:10px;margin-top:20px;}
+
+/* AVATAR */
+.profile-avatar-section{display:flex;align-items:center;gap:20px;margin-bottom:24px;padding:20px;background:var(--purple-bg);border-radius:12px;}
+.profile-av-big{width:70px;height:70px;border-radius:18px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;flex-shrink:0;}
+.profile-av-info h4{font-size:15px;font-weight:700;}
+.profile-av-info p{font-size:12px;color:var(--text3);margin-top:2px;}
+.role-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--purple);color:#fff;margin-top:5px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;padding:13px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);animation:slideUp .3s ease;transition:opacity .3s;}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* SECURITY METER */
+.pw-strength{height:4px;border-radius:4px;margin-top:6px;transition:all .3s;background:#E5E7EB;}
+.pw-strength.weak{background:var(--red);width:33%;}
+.pw-strength.medium{background:var(--orange);width:66%;}
+.pw-strength.strong{background:var(--green);width:100%;}
+
+/* SMTP STATUS */
+.smtp-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;font-size:12.5px;font-weight:700;margin-top:12px;}
+.smtp-status.ok{background:var(--green-bg);color:#065F46;}
+.smtp-status.err{background:#FEF2F2;color:#991B1B;}
+
+/* ADMIN ONLY */
+.admin-section{display:none;}
+
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.fu{animation:fu .4s ease both;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎓</div>
+    <h2>NextGen Tech</h2>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">MAIN</div>
+    <div id="adminSidebarLinks" style="display:none;">
+      <a class="sb-link" href="dashboard.html"><span class="s-icon">📊</span>Admin</a>
+      <a class="sb-link" href="users.html"><span class="s-icon">🎓</span>Instructor Management</a>
+      <a class="sb-link" href="students.html"><span class="s-icon">👨‍🎓</span>Students</a>
+      <a class="sb-link" href="courses.html"><span class="s-icon">📚</span>Courses</a>
+      <a class="sb-link" href="certificates.html"><span class="s-icon">📜</span>Certificates</a>
+      <a class="sb-link" href="notices.html"><span class="s-icon">📢</span>Notices</a>
+      <a class="sb-link active" href="settings.html"><span class="s-icon">⚙️</span>Settings</a>
+    </div>
+    <div id="instructorSidebarLinks" style="display:none;">
+      <a class="sb-link" href="user-dashboard.html"><span class="s-icon">📊</span>Dashboard</a>
+      <a class="sb-link" href="courses.html"><span class="s-icon">📚</span>My Courses</a>
+      <a class="sb-link" href="students.html"><span class="s-icon">🎓</span>My Students</a>
+      <a class="sb-link" href="notices.html"><span class="s-icon">📢</span>Notices</a>
+      <a class="sb-link active" href="settings.html"><span class="s-icon">⚙️</span>Settings</a>
+    </div>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-av" id="sidebarInitials">U</div>
+    <div class="user-info-text"><h4 id="sidebarName">User</h4><p id="sidebarRole">—</p></div>
+    <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;">⚙️ Settings</div>
+    <div class="topbar-right">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="tb-av" id="topbarInitials">U</div>
+        <div><div class="tb-name" id="topbarName">User</div><div class="tb-role" id="topbarRole">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page -->
+  <div class="page">
+    <div class="page-header fu">
+      <div class="page-title">Settings</div>
+      <div class="page-sub">Manage your profile, password and system configuration</div>
+    </div>
+
+    <div class="settings-layout">
+      <!-- Left Nav -->
+      <div class="settings-nav fu">
+        <div class="sn-item active admin-section" id="profileNavItem" onclick="showTab('profile',this)"><span class="sn-icon">👤</span>Profile</div>
+        <div class="sn-item" id="passwordNavItem" onclick="showTab('password',this)"><span class="sn-icon">🔒</span>Password</div>
+        <div class="sn-item admin-section" id="systemNavItem" onclick="showTab('system',this)"><span class="sn-icon">⚙️</span>System</div>
+        <div class="sn-item admin-section" id="smtpNavItem" onclick="showTab('smtp',this)"><span class="sn-icon">📧</span>Email / SMTP</div>
+        <div class="sn-item admin-section" id="usersNavItem" onclick="showTab('users',this)"><span class="sn-icon">🔑</span>User Passwords</div>
+      </div>
+
+      <!-- Content -->
+      <div class="settings-content">
+
+        <!-- Profile Tab -->
+        <div class="s-card fu admin-section" id="tab-profile">
+          <div class="s-card-head">
+            <div class="s-card-icon" style="background:var(--purple-bg);">👤</div>
+            <div><h3>Profile Information</h3><p>Update your name, email and department</p></div>
+          </div>
+          <div class="s-card-body">
+            <div class="profile-avatar-section">
+              <div class="profile-av-big" id="profileAvatar">U</div>
+              <div class="profile-av-info">
+                <h4 id="profileName">Loading…</h4>
+                <p id="profileEmail">—</p>
+                <span class="role-badge" id="profileRole">—</span>
+              </div>
+            </div>
+            <div class="fg-row">
+              <div class="fg">
+                <label>Full Name *</label>
+                <input type="text" id="p_name" placeholder="Your full name">
+              </div>
+              <div class="fg">
+                <label>Email Address *</label>
+                <input type="email" id="p_email" placeholder="your@email.com">
+              </div>
+            </div>
+            <div class="fg">
+              <label>Department</label>
+              <input type="text" id="p_dept" placeholder="e.g. Technology, Training">
+            </div>
+            <div class="btn-row">
+              <button class="btn-save" onclick="saveProfile()">💾 Save Profile</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password Tab -->
+        <div class="s-card fu" id="tab-password">
+          <div class="s-card-head">
+            <div class="s-card-icon" style="background:#FEF2F2;">🔒</div>
+            <div><h3>Change Password</h3><p>Keep your account secure with a strong password</p></div>
+          </div>
+          <div class="s-card-body">
+            <div class="fg">
+              <label>Current Password *</label>
+              <input type="password" id="pw_current" placeholder="Enter current password">
+            </div>
+            <div class="divider"></div>
+            <div class="fg-row">
+              <div class="fg">
+                <label>New Password *</label>
+                <input type="password" id="pw_new" placeholder="Min 6 characters" oninput="checkStrength(this.value)">
+                <div class="pw-strength" id="pwStrength"></div>
+                <div class="hint" id="pwHint"></div>
+              </div>
+              <div class="fg">
+                <label>Confirm New Password *</label>
+                <input type="password" id="pw_confirm" placeholder="Repeat new password">
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn-save" onclick="savePassword()">🔒 Change Password</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Tab (Admin only) -->
+        <div class="s-card fu admin-section" id="tab-system">
+          <div class="s-card-head">
+            <div class="s-card-icon" style="background:var(--orange-bg);">🏢</div>
+            <div><h3>Organisation Settings</h3><p>Update your organisation name and branding</p></div>
+          </div>
+          <div class="s-card-body">
+            <div class="fg">
+              <label>Organisation / App Name *</label>
+              <input type="text" id="sys_appname" placeholder="e.g. NextGen Technologies">
+              <div class="hint">This name appears on certificates and emails sent to students.</div>
+            </div>
+            <div class="btn-row">
+              <button class="btn-save" onclick="saveSystem()">💾 Save Settings</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SMTP Tab (Admin only) -->
+        <div class="s-card fu admin-section" id="tab-smtp">
+          <div class="s-card-head">
+            <div class="s-card-icon" style="background:var(--teal-bg);">📧</div>
+            <div><h3>Email / SMTP Settings</h3><p>Configure outgoing email for certificate delivery</p></div>
+          </div>
+          <div class="s-card-body">
+            <div class="fg-row">
+              <div class="fg">
+                <label>SMTP Host</label>
+                <input type="text" id="smtp_host" placeholder="smtp.gmail.com">
+              </div>
+              <div class="fg">
+                <label>SMTP Port</label>
+                <input type="number" id="smtp_port" placeholder="587">
+              </div>
+            </div>
+            <div class="fg">
+              <label>Security</label>
+              <select id="smtp_secure">
+                <option value="tls">TLS (Port 587) — Recommended</option>
+                <option value="ssl">SSL (Port 465)</option>
+              </select>
+            </div>
+            <div class="divider"></div>
+            <div class="fg-row">
+              <div class="fg">
+                <label>SMTP Username (Email)</label>
+                <input type="email" id="smtp_user" placeholder="your@gmail.com">
+              </div>
+              <div class="fg">
+                <label>SMTP Password / App Password</label>
+                <input type="password" id="smtp_pass" placeholder="Gmail App Password">
+                <div class="hint">Gmail: Use App Password, not your login password. <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--purple);">Generate here →</a></div>
+              </div>
+            </div>
+            <div class="fg-row">
+              <div class="fg">
+                <label>From Email</label>
+                <input type="email" id="smtp_from" placeholder="your@gmail.com">
+              </div>
+              <div class="fg">
+                <label>From Name</label>
+                <input type="text" id="smtp_from_name" placeholder="NextGen Technologies">
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn-save" onclick="saveSmtp()">💾 Save SMTP</button>
+              <button class="btn-test" onclick="testSmtp()">📤 Send Test Email</button>
+            </div>
+            <div id="smtpStatusMsg" style="display:none;" class="smtp-status"></div>
+          </div>
+        </div>
+
+
+        <!-- User Password Reset Tab (Admin only) -->
+        <div class="s-card fu admin-section" id="tab-users">
+          <div class="s-card-head">
+            <div class="s-card-icon" style="background:#EDE9FE;">🔑</div>
+            <div><h3>Reset Instructor Password</h3><p>Change password for any instructor account</p></div>
+          </div>
+          <div class="s-card-body">
+            <div class="fg">
+              <label>Select Instructor</label>
+              <select id="reset_user_id" onchange="loadSelectedUser()">
+                <option value="">Select instructor…</option>
+              </select>
+            </div>
+            <div id="selectedUserInfo" style="display:none;background:var(--purple-bg);border-radius:10px;padding:12px 16px;margin-bottom:16px;align-items:center;gap:12px;">
+              <div id="resetUserAv" style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;"></div>
+              <div><div id="resetUserName" style="font-weight:700;font-size:13px;"></div><div id="resetUserEmail" style="font-size:12px;color:var(--text3);"></div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="fg-row">
+              <div class="fg">
+                <label>New Password *</label>
+                <input type="password" id="reset_pw" placeholder="Min 6 characters" oninput="checkResetStrength(this.value)">
+                <div class="pw-strength" id="resetPwStrength"></div>
+                <div class="hint" id="resetPwHint"></div>
+              </div>
+              <div class="fg">
+                <label>Confirm Password *</label>
+                <input type="password" id="reset_pw_confirm" placeholder="Repeat password">
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn-save" onclick="resetUserPassword()" id="resetPwBtn">🔑 Reset Password</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Tab switching ──────────────────────────────────────────
+function showTab(name, el) {
+  document.querySelectorAll('.sn-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.s-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── Toast ──────────────────────────────────────────────────
+function showToast(msg, bg='#1E1B4B', color='#fff') {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.cssText = `background:${bg};color:${color};`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+// ── Password strength ──────────────────────────────────────
+function checkStrength(val) {
+  const bar  = document.getElementById('pwStrength');
+  const hint = document.getElementById('pwHint');
+  if (!val) { bar.className = 'pw-strength'; hint.textContent = ''; return; }
+  const strong = val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val);
+  const medium = val.length >= 6;
+  if (strong)      { bar.className = 'pw-strength strong'; hint.textContent = '✅ Strong password'; hint.style.color='var(--green)'; }
+  else if (medium) { bar.className = 'pw-strength medium'; hint.textContent = '⚠️ Medium — add numbers & symbols'; hint.style.color='var(--orange)'; }
+  else             { bar.className = 'pw-strength weak';   hint.textContent = '❌ Too short (min 6)'; hint.style.color='var(--red)'; }
+}
+
+// ── Auth / Init ────────────────────────────────────────────
+let currentUser = null;
+
+function logout() {
+  fetch('auth.php?action=logout', {credentials:'include'}).finally(() => {
+    sessionStorage.clear(); location.href = 'login.html';
+  });
+}
+
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+
+(async () => {
+  try {
+    const r = await fetch('auth.php?action=me', {credentials:'include'});
+    const j = await r.json();
+    if (!j.success) { location.href = 'login.html'; return; }
+    currentUser = j.data;
+    sessionStorage.setItem('ng_user', JSON.stringify(currentUser));
+
+    const ini = initials(currentUser.name);
+    document.getElementById('sidebarInitials').textContent = ini;
+    document.getElementById('sidebarName').textContent     = currentUser.name;
+    document.getElementById('sidebarRole').textContent     = currentUser.role;
+    document.getElementById('topbarInitials').textContent  = ini;
+    document.getElementById('topbarName').textContent      = currentUser.name;
+    document.getElementById('topbarRole').textContent      = currentUser.role;
+
+    // Show correct sidebar
+    if (currentUser.role === 'Admin') {
+      document.getElementById('adminSidebarLinks').style.display = '';
+      // Show all admin-only nav items and cards — remove class so CSS doesn't hide them
+      document.querySelectorAll('.admin-section').forEach(el => {
+        el.classList.remove('admin-section');
+      });
+      // Set Profile as the active tab for Admin
+      document.getElementById('profileNavItem').classList.add('active');
+      document.getElementById('tab-profile').classList.add('active');
+      // Remove active from password nav (default)
+      document.getElementById('passwordNavItem').classList.remove('active');
+      document.getElementById('tab-password').classList.remove('active');
+      loadSystemSettings();
+      loadInstructorList();
+    } else {
+      document.getElementById('instructorSidebarLinks').style.display = '';
+      // Instructor: Password tab only — make it active
+      document.getElementById('passwordNavItem').classList.add('active');
+      document.getElementById('tab-password').classList.add('active');
+    }
+
+    if (currentUser.role === 'Admin') loadProfile();
+  } catch(e) { location.href = 'login.html'; }
+})();
+
+// ── Load Profile ───────────────────────────────────────────
+async function loadProfile() {
+  const r = await fetch('settings.php?action=get_profile', {credentials:'include'});
+  const j = await r.json();
+  if (!j.success) return;
+  const u = j.data;
+  const ini = initials(u.name);
+
+  document.getElementById('profileAvatar').textContent = ini;
+  document.getElementById('profileName').textContent   = u.name;
+  document.getElementById('profileEmail').textContent  = u.email;
+  document.getElementById('profileRole').textContent   = u.role;
+  document.getElementById('p_name').value  = u.name;
+  document.getElementById('p_email').value = u.email;
+  document.getElementById('p_dept').value  = u.department || '';
+}
+
+// ── Save Profile ───────────────────────────────────────────
+async function saveProfile() {
+  const btn = document.querySelector('#tab-profile .btn-save');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    const r = await fetch('settings.php?action=update_profile', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name:       document.getElementById('p_name').value.trim(),
+        email:      document.getElementById('p_email').value.trim(),
+        department: document.getElementById('p_dept').value.trim()
+      })
+    });
+    const j = await r.json();
+    if (j.success) {
+      showToast('✅ Profile updated!', '#D1FAE5', '#065F46');
+      loadProfile();
+      // Update topbar name
+      document.getElementById('topbarName').textContent = document.getElementById('p_name').value;
+      document.getElementById('sidebarName').textContent = document.getElementById('p_name').value;
+    } else {
+      showToast('❌ ' + j.message, '#FEF2F2', '#991B1B');
+    }
+  } catch(e) { showToast('❌ Network error', '#FEF2F2', '#991B1B'); }
+  btn.textContent = '💾 Save Profile'; btn.disabled = false;
+}
+
+// ── Change Password ────────────────────────────────────────
+async function savePassword() {
+  const btn = document.querySelector('#tab-password .btn-save');
+  const cur = document.getElementById('pw_current').value;
+  const nw  = document.getElementById('pw_new').value;
+  const cf  = document.getElementById('pw_confirm').value;
+
+  if (!cur || !nw || !cf) { showToast('⚠️ Fill all fields', '#FEF3C7', '#92400E'); return; }
+  if (nw !== cf)           { showToast('❌ Passwords do not match', '#FEF2F2', '#991B1B'); return; }
+
+  btn.textContent = 'Changing…'; btn.disabled = true;
+  try {
+    const r = await fetch('settings.php?action=change_password', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({current_password:cur, new_password:nw, confirm_password:cf})
+    });
+    const j = await r.json();
+    if (j.success) {
+      showToast('✅ Password changed!', '#D1FAE5', '#065F46');
+      document.getElementById('pw_current').value = '';
+      document.getElementById('pw_new').value = '';
+      document.getElementById('pw_confirm').value = '';
+      document.getElementById('pwStrength').className = 'pw-strength';
+      document.getElementById('pwHint').textContent = '';
+    } else {
+      showToast('❌ ' + j.message, '#FEF2F2', '#991B1B');
+    }
+  } catch(e) { showToast('❌ Network error', '#FEF2F2', '#991B1B'); }
+  btn.textContent = '🔒 Change Password'; btn.disabled = false;
+}
+
+// ── Load System Settings ───────────────────────────────────
+async function loadSystemSettings() {
+  const r = await fetch('settings.php?action=get_system', {credentials:'include'});
+  const j = await r.json();
+  if (!j.success) return;
+  const d = j.data;
+  document.getElementById('sys_appname').value   = d.app_name || '';
+  document.getElementById('smtp_host').value     = d.smtp_host || '';
+  document.getElementById('smtp_port').value     = d.smtp_port || '';
+  document.getElementById('smtp_secure').value   = d.smtp_secure || 'tls';
+  document.getElementById('smtp_user').value     = d.smtp_username || '';
+  document.getElementById('smtp_pass').value     = d.smtp_password || '';
+  document.getElementById('smtp_from').value     = d.smtp_from || '';
+  document.getElementById('smtp_from_name').value= d.smtp_from_name || '';
+}
+
+// ── Save System ────────────────────────────────────────────
+async function saveSystem() {
+  const btn = document.querySelector('#tab-system .btn-save');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    const r = await fetch('settings.php?action=update_system', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ app_name: document.getElementById('sys_appname').value.trim() })
+    });
+    const j = await r.json();
+    if (j.success) showToast('✅ Settings saved!', '#D1FAE5', '#065F46');
+    else showToast('❌ ' + j.message, '#FEF2F2', '#991B1B');
+  } catch(e) { showToast('❌ Network error', '#FEF2F2', '#991B1B'); }
+  btn.textContent = '💾 Save Settings'; btn.disabled = false;
+}
+
+// ── Save SMTP ──────────────────────────────────────────────
+async function saveSmtp() {
+  const btn = document.querySelector('#tab-smtp .btn-save');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+  try {
+    const r = await fetch('settings.php?action=update_system', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        smtp_host:      document.getElementById('smtp_host').value.trim(),
+        smtp_port:      document.getElementById('smtp_port').value.trim(),
+        smtp_secure:    document.getElementById('smtp_secure').value,
+        smtp_username:  document.getElementById('smtp_user').value.trim(),
+        smtp_password:  document.getElementById('smtp_pass').value.trim(),
+        smtp_from:      document.getElementById('smtp_from').value.trim(),
+        smtp_from_name: document.getElementById('smtp_from_name').value.trim()
+      })
+    });
+    const j = await r.json();
+    if (j.success) showToast('✅ SMTP settings saved!', '#D1FAE5', '#065F46');
+    else showToast('❌ ' + j.message, '#FEF2F2', '#991B1B');
+  } catch(e) { showToast('❌ Network error', '#FEF2F2', '#991B1B'); }
+  btn.textContent = '💾 Save SMTP'; btn.disabled = false;
+}
+
+// ── Test SMTP ──────────────────────────────────────────────
+async function testSmtp() {
+  const btn   = document.querySelector('.btn-test');
+  const msgEl = document.getElementById('smtpStatusMsg');
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  msgEl.style.display = 'none';
+
+  // First save, then test
+  await saveSmtp();
+
+  try {
+    const r = await fetch('settings.php?action=test_smtp', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ to: document.getElementById('smtp_from').value.trim() })
+    });
+    const j = await r.json();
+    msgEl.style.display = 'flex';
+    if (j.success) {
+      msgEl.className = 'smtp-status ok';
+      msgEl.textContent = '✅ Test email sent! Check your inbox.';
+    } else {
+      msgEl.className = 'smtp-status err';
+      msgEl.textContent = '❌ ' + j.message;
+    }
+  } catch(e) {
+    msgEl.style.display = 'flex';
+    msgEl.className = 'smtp-status err';
+    msgEl.textContent = '❌ Network error';
+  }
+  btn.textContent = '📤 Send Test Email'; btn.disabled = false;
+}
+
+// ── Load Instructors for password reset ───────────────────
+async function loadInstructorList() {
+  const r = await fetch('users.php?action=list&role=User&status=Active', {credentials:'include'});
+  const j = await r.json();
+  if (!j.success) return;
+  const sel = document.getElementById('reset_user_id');
+  sel.innerHTML = '<option value="">Select instructor…</option>' +
+    j.data.map(u => `<option value="${u.id}" data-name="${u.name}" data-email="${u.email}">${u.name} (${u.username})</option>`).join('');
+}
+
+function loadSelectedUser() {
+  const sel = document.getElementById('reset_user_id');
+  const opt = sel.options[sel.selectedIndex];
+  const infoDiv = document.getElementById('selectedUserInfo');
+  if (!sel.value) { infoDiv.style.display = 'none'; return; }
+  const name  = opt.dataset.name;
+  const email = opt.dataset.email;
+  const ini   = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('resetUserAv').textContent    = ini;
+  document.getElementById('resetUserName').textContent  = name;
+  document.getElementById('resetUserEmail').textContent = email;
+  infoDiv.style.display = 'flex';
+}
+
+function checkResetStrength(val) {
+  const bar  = document.getElementById('resetPwStrength');
+  const hint = document.getElementById('resetPwHint');
+  if (!val) { bar.className = 'pw-strength'; hint.textContent = ''; return; }
+  const strong = val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val);
+  const medium = val.length >= 6;
+  if (strong)      { bar.className = 'pw-strength strong'; hint.textContent = '✅ Strong'; hint.style.color='var(--green)'; }
+  else if (medium) { bar.className = 'pw-strength medium'; hint.textContent = '⚠️ Medium'; hint.style.color='var(--orange)'; }
+  else             { bar.className = 'pw-strength weak';   hint.textContent = '❌ Too short'; hint.style.color='var(--red)'; }
+}
+
+async function resetUserPassword() {
+  const userId  = document.getElementById('reset_user_id').value;
+  const newPw   = document.getElementById('reset_pw').value.trim();
+  const confirm = document.getElementById('reset_pw_confirm').value.trim();
+  const btn     = document.getElementById('resetPwBtn');
+
+  if (!userId)          { showToast('⚠️ Select an instructor', '#FEF3C7', '#92400E'); return; }
+  if (!newPw)           { showToast('⚠️ Enter new password', '#FEF3C7', '#92400E'); return; }
+  if (newPw.length < 6) { showToast('⚠️ Password min 6 characters', '#FEF3C7', '#92400E'); return; }
+  if (newPw !== confirm) { showToast('❌ Passwords do not match', '#FEF2F2', '#991B1B'); return; }
+
+  btn.textContent = 'Resetting…'; btn.disabled = true;
+  try {
+    const r = await fetch('settings.php?action=admin_reset_password', {
+      method: 'POST', credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ user_id: userId, new_password: newPw })
+    });
+    const j = await r.json();
+    if (j.success) {
+      showToast('✅ Password reset successfully!', '#D1FAE5', '#065F46');
+      document.getElementById('reset_pw').value = '';
+      document.getElementById('reset_pw_confirm').value = '';
+      document.getElementById('reset_user_id').value = '';
+      document.getElementById('selectedUserInfo').style.display = 'none';
+      document.getElementById('resetPwStrength').className = 'pw-strength';
+      document.getElementById('resetPwHint').textContent = '';
+    } else {
+      showToast('❌ ' + j.message, '#FEF2F2', '#991B1B');
+    }
+  } catch(e) { showToast('❌ Network error', '#FEF2F2', '#991B1B'); }
+  btn.textContent = '🔑 Reset Password'; btn.disabled = false;
+}
+</script>
+</body>
+</html>
