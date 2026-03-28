@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Plesk Server
+    name: Deploy to Plesk via FTP
     runs-on: ubuntu-latest
 
     steps:
@@ -15,7 +15,7 @@ jobs:
       - name: 📋 Deployment info
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "  🚀 NextGen LMS — Auto Deploy"
+          echo "  🚀 NextGen LMS — FTP Deploy"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "  Branch  : ${{ github.ref_name }}"
           echo "  Commit  : ${{ github.sha }}"
@@ -23,36 +23,27 @@ jobs:
           echo "  Message : ${{ github.event.head_commit.message }}"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-      # ── Step 2: Trigger Plesk via deploy.php webhook ─────────
-      - name: 🔗 Trigger Plesk deployment
-        timeout-minutes: 5
-        run: |
-          HTTP_STATUS=$(curl -s -o /tmp/deploy_response.txt -w "%{http_code}" \
-            -X POST https://nextgen.codesen.com/deploy.php \
-            -H "X-Deploy-Token: ${{ secrets.DEPLOY_SECRET }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "branch": "${{ github.ref_name }}",
-              "commit": "${{ github.sha }}",
-              "pusher": "${{ github.actor }}"
-            }')
+      # ── Step 2: Checkout code ─────────────────────────────────
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
 
-          echo "📡 Plesk response (HTTP $HTTP_STATUS):"
-          cat /tmp/deploy_response.txt
+      # ── Step 3: Deploy via FTP ────────────────────────────────
+      - name: 📤 Upload files to Plesk via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./httpdocs/
+          server-dir: /httpdocs/
+          dangerous-clean-slate: false
 
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "❌ Deployment failed! HTTP status: $HTTP_STATUS"
-            exit 1
-          fi
-
-          echo "✅ Plesk pulled latest code successfully!"
-
-      # ── Step 3: Success summary ───────────────────────────────
+      # ── Step 4: Success summary ───────────────────────────────
       - name: ✅ Deployment complete
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "  ✅ Deployment Successful!"
-          echo "  🌐 Live at: https://nextgen.codesen.com/httpdocs/"
+          echo "  ✅ FTP Deployment Successful!"
+          echo "  🌐 Live at: https://www.nextgen.codesen.com"
           echo "  📝 Commit : ${{ github.sha }}"
           echo "  👤 By     : ${{ github.actor }}"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
