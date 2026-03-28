@@ -29,13 +29,12 @@ fi
 
 # ── Step 2: Check for changes ────────────────────────────────
 STATUS=$(git status --porcelain)
-if [ -z "$STATUS" ]; then
-  echo -e "${YELLOW}⚠ No changes to deploy. Working tree is clean.${NC}"
+UNPUSHED=$(git log origin/main..HEAD --oneline 2>/dev/null)
+
+if [ -z "$STATUS" ] && [ -z "$UNPUSHED" ]; then
+  echo -e "${YELLOW}⚠ No changes to deploy. Working tree is clean and up to date.${NC}"
   exit 0
 fi
-
-echo -e "\n${YELLOW}Changed files:${NC}"
-git status --short
 
 # ── Step 3: Commit message ───────────────────────────────────
 if [ -n "$1" ]; then
@@ -44,14 +43,21 @@ else
   MSG="deploy: update $(date '+%Y-%m-%d %H:%M')"
 fi
 
-echo -e "\n${YELLOW}Commit message:${NC} $MSG"
+if [ -n "$STATUS" ]; then
+  echo -e "\n${YELLOW}Changed files:${NC}"
+  git status --short
+  echo -e "\n${YELLOW}Commit message:${NC} $MSG"
 
-# ── Step 4: Git add + commit + push ──────────────────────────
-echo -e "\n${BLUE}[1/3] Staging all changes...${NC}"
-git add .
+  # ── Step 4: Git add + commit ─────────────────────────────────
+  echo -e "\n${BLUE}[1/3] Staging all changes...${NC}"
+  git add .
 
-echo -e "${BLUE}[2/3] Committing...${NC}"
-git commit -m "$MSG"
+  echo -e "${BLUE}[2/3] Committing...${NC}"
+  git commit -m "$MSG"
+else
+  echo -e "\n${YELLOW}No new file changes — pushing existing commit(s)...${NC}"
+  git log origin/main..HEAD --oneline
+fi
 
 echo -e "${BLUE}[3/3] Pushing to GitHub (main)...${NC}"
 git push origin main
