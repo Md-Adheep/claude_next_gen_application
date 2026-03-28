@@ -167,7 +167,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
       <!-- Left Nav -->
       <div class="settings-nav fu">
         <div class="sn-item active admin-section" id="profileNavItem" onclick="showTab('profile',this)"><span class="sn-icon">👤</span>Profile</div>
-        <div class="sn-item" id="passwordNavItem" onclick="showTab('password',this)"><span class="sn-icon">🔒</span>Password</div>
+        <div class="sn-item active" id="passwordNavItem" onclick="showTab('password',this)"><span class="sn-icon">🔒</span>Password</div>
         <div class="sn-item admin-section" id="systemNavItem" onclick="showTab('system',this)"><span class="sn-icon">⚙️</span>System</div>
         <div class="sn-item admin-section" id="smtpNavItem" onclick="showTab('smtp',this)"><span class="sn-icon">📧</span>Email / SMTP</div>
         <div class="sn-item admin-section" id="usersNavItem" onclick="showTab('users',this)"><span class="sn-icon">🔑</span>User Passwords</div>
@@ -212,7 +212,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
         </div>
 
         <!-- Password Tab -->
-        <div class="s-card fu" id="tab-password">
+        <div class="s-card fu active" id="tab-password">
           <div class="s-card-head">
             <div class="s-card-icon" style="background:#FEF2F2;">🔒</div>
             <div><h3>Change Password</h3><p>Keep your account secure with a strong password</p></div>
@@ -403,6 +403,7 @@ function initials(name) {
 (async () => {
   try {
     const r = await fetch('auth.php?action=me', {credentials:'include'});
+    if (!r.ok) { location.href = 'login.html'; return; }
     const j = await r.json();
     if (!j.success) { location.href = 'login.html'; return; }
     currentUser = j.data;
@@ -419,16 +420,14 @@ function initials(name) {
     // Show correct sidebar
     if (currentUser.role === 'Admin') {
       document.getElementById('adminSidebarLinks').style.display = '';
-      // Show all admin-only nav items and cards — remove class so CSS doesn't hide them
       document.querySelectorAll('.admin-section').forEach(el => {
         el.classList.remove('admin-section');
       });
-      // Set Profile as the active tab for Admin
-      document.getElementById('profileNavItem').classList.add('active');
-      document.getElementById('tab-profile').classList.add('active');
-      // Remove active from password nav (default)
+      // Switch to Profile tab for Admin (override default password tab)
       document.getElementById('passwordNavItem').classList.remove('active');
       document.getElementById('tab-password').classList.remove('active');
+      document.getElementById('profileNavItem').classList.add('active');
+      document.getElementById('tab-profile').classList.add('active');
       loadSystemSettings();
       loadInstructorList();
     } else {
@@ -444,19 +443,21 @@ function initials(name) {
 
 // ── Load Profile ───────────────────────────────────────────
 async function loadProfile() {
-  const r = await fetch('settings.php?action=get_profile', {credentials:'include'});
-  const j = await r.json();
-  if (!j.success) return;
-  const u = j.data;
-  const ini = initials(u.name);
-
-  document.getElementById('profileAvatar').textContent = ini;
-  document.getElementById('profileName').textContent   = u.name;
-  document.getElementById('profileEmail').textContent  = u.email;
-  document.getElementById('profileRole').textContent   = u.role;
-  document.getElementById('p_name').value  = u.name;
-  document.getElementById('p_email').value = u.email;
-  document.getElementById('p_dept').value  = u.department || '';
+  try {
+    const r = await fetch('settings.php?action=get_profile', {credentials:'include'});
+    if (!r.ok) { showToast('⚠️ Could not load profile', '#FEF3C7', '#92400E'); return; }
+    const j = await r.json();
+    if (!j.success) { showToast('⚠️ ' + j.message, '#FEF3C7', '#92400E'); return; }
+    const u = j.data;
+    const ini = initials(u.name);
+    document.getElementById('profileAvatar').textContent = ini;
+    document.getElementById('profileName').textContent   = u.name;
+    document.getElementById('profileEmail').textContent  = u.email;
+    document.getElementById('profileRole').textContent   = u.role;
+    document.getElementById('p_name').value  = u.name;
+    document.getElementById('p_email').value = u.email;
+    document.getElementById('p_dept').value  = u.department || '';
+  } catch(e) { showToast('⚠️ Network error loading profile', '#FEF3C7', '#92400E'); }
 }
 
 // ── Save Profile ───────────────────────────────────────────
@@ -521,18 +522,21 @@ async function savePassword() {
 
 // ── Load System Settings ───────────────────────────────────
 async function loadSystemSettings() {
-  const r = await fetch('settings.php?action=get_system', {credentials:'include'});
-  const j = await r.json();
-  if (!j.success) return;
-  const d = j.data;
-  document.getElementById('sys_appname').value   = d.app_name || '';
-  document.getElementById('smtp_host').value     = d.smtp_host || '';
-  document.getElementById('smtp_port').value     = d.smtp_port || '';
-  document.getElementById('smtp_secure').value   = d.smtp_secure || 'tls';
-  document.getElementById('smtp_user').value     = d.smtp_username || '';
-  document.getElementById('smtp_pass').value     = d.smtp_password || '';
-  document.getElementById('smtp_from').value     = d.smtp_from || '';
-  document.getElementById('smtp_from_name').value= d.smtp_from_name || '';
+  try {
+    const r = await fetch('settings.php?action=get_system', {credentials:'include'});
+    if (!r.ok) { showToast('⚠️ Could not load system settings (HTTP ' + r.status + ')', '#FEF3C7', '#92400E'); return; }
+    const j = await r.json();
+    if (!j.success) { showToast('⚠️ ' + j.message, '#FEF3C7', '#92400E'); return; }
+    const d = j.data;
+    document.getElementById('sys_appname').value    = d.app_name || '';
+    document.getElementById('smtp_host').value      = d.smtp_host || '';
+    document.getElementById('smtp_port').value      = d.smtp_port || '';
+    document.getElementById('smtp_secure').value    = d.smtp_secure || 'tls';
+    document.getElementById('smtp_user').value      = d.smtp_username || '';
+    document.getElementById('smtp_pass').value      = d.smtp_password || '';
+    document.getElementById('smtp_from').value      = d.smtp_from || '';
+    document.getElementById('smtp_from_name').value = d.smtp_from_name || '';
+  } catch(e) { showToast('⚠️ Network error loading settings', '#FEF3C7', '#92400E'); }
 }
 
 // ── Save System ────────────────────────────────────────────
