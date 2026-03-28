@@ -1,0 +1,58 @@
+name: 🚀 Deploy to Plesk — NextGen LMS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Plesk Server
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Step 1: Show deploy info ──────────────────────────────
+      - name: 📋 Deployment info
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  🚀 NextGen LMS — Auto Deploy"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  Branch  : ${{ github.ref_name }}"
+          echo "  Commit  : ${{ github.sha }}"
+          echo "  Pusher  : ${{ github.actor }}"
+          echo "  Message : ${{ github.event.head_commit.message }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+      # ── Step 2: Trigger Plesk via deploy.php webhook ─────────
+      - name: 🔗 Trigger Plesk deployment
+        timeout-minutes: 5
+        run: |
+          HTTP_STATUS=$(curl -s -o /tmp/deploy_response.txt -w "%{http_code}" \
+            -X POST https://nextgen.codesen.com/deploy.php \
+            -H "X-Deploy-Token: ${{ secrets.DEPLOY_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "branch": "${{ github.ref_name }}",
+              "commit": "${{ github.sha }}",
+              "pusher": "${{ github.actor }}"
+            }')
+
+          echo "📡 Plesk response (HTTP $HTTP_STATUS):"
+          cat /tmp/deploy_response.txt
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "❌ Deployment failed! HTTP status: $HTTP_STATUS"
+            exit 1
+          fi
+
+          echo "✅ Plesk pulled latest code successfully!"
+
+      # ── Step 3: Success summary ───────────────────────────────
+      - name: ✅ Deployment complete
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  ✅ Deployment Successful!"
+          echo "  🌐 Live at: https://nextgen.codesen.com/httpdocs/"
+          echo "  📝 Commit : ${{ github.sha }}"
+          echo "  👤 By     : ${{ github.actor }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

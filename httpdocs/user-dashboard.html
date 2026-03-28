@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Dashboard · NextGen Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7C3AED;--purple-lt:#8B5CF6;--purple-bg:#F5F3FF;--purple-soft:#EDE9FE;--teal:#06B6D4;--teal-bg:#ECFEFF;--orange:#F97316;--orange-bg:#FFF7ED;--green:#10B981;--green-bg:#ECFDF5;--red:#EF4444;--bg:#F4F0FB;--white:#FFFFFF;--text:#1E1B4B;--text2:#6B7280;--text3:#9CA3AF;--border:#F3F4F6;--sidebar-w:230px;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;overflow:hidden;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);display:flex;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:10px;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--white);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;box-shadow:4px 0 20px rgba(124,58,237,.07);}
+.sb-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--purple-lt));display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;box-shadow:0 4px 12px rgba(124,58,237,.3);}
+.sb-logo h2{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--purple);}
+.sb-nav{padding:12px 10px;flex:1;overflow-y:auto;}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:10px 11px 4px;font-weight:700;}
+.sb-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .16s;text-decoration:none;margin-bottom:2px;position:relative;}
+.sb-link:hover{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--purple);}
+.s-icon{font-size:15px;width:18px;text-align:center;}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;}
+.sidebar-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.user-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.user-info-text h4{font-size:13px;font-weight:700;}.user-info-text p{font-size:11px;color:var(--text3);}
+.logout-btn{margin-left:auto;background:none;border:none;font-size:17px;cursor:pointer;color:var(--text3);transition:color .2s;}.logout-btn:hover{color:var(--red);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:62px;flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 26px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(124,58,237,.05);}
+.search-bar{flex:1;max-width:360px;position:relative;}
+.search-bar input{width:100%;background:#F9FAFB;border:1.5px solid var(--border);border-radius:12px;padding:9px 14px 9px 38px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.search-bar input:focus{border-color:var(--purple-lt);}.search-bar input::placeholder{color:var(--text3);}
+.search-bar::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-icon-btn{width:36px;height:36px;border-radius:10px;background:#F9FAFB;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .18s;position:relative;}
+.tb-icon-btn:hover{border-color:var(--purple-lt);background:var(--purple-bg);}
+.tb-notif{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid #fff;}
+.tb-profile{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 5px;background:#F9FAFB;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;}
+.tb-av{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+.tb-info span{display:block;font-size:12.5px;font-weight:700;line-height:1.2;}.tb-info small{font-size:11px;color:var(--text3);}
+.page{flex:1;overflow-y:auto;padding:22px 26px;}
+.welcome-banner{background:linear-gradient(135deg,var(--purple) 0%,#06B6D4 100%);border-radius:16px;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;color:#fff;box-shadow:0 8px 24px rgba(124,58,237,.25);}
+.wb-left h2{font-family:'Poppins',sans-serif;font-size:21px;font-weight:700;margin-bottom:4px;}
+.wb-left p{font-size:13px;opacity:.85;}
+.wb-icon{font-size:50px;opacity:.9;}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--white);border-radius:14px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.04);transition:transform .2s,box-shadow .2s;}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(124,58,237,.1);}
+.sc-label{font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;}
+.sc-val{font-family:'Poppins',sans-serif;font-size:26px;font-weight:700;line-height:1;}
+.sc-icon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.row{display:grid;gap:16px;margin-bottom:16px;}
+.r-60-40{grid-template-columns:1.5fr 1fr;}
+.card{background:var(--white);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.04);overflow:hidden;}
+.card-head{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F9FAFB;}
+.card-head h3{font-family:'Poppins',sans-serif;font-size:14.5px;font-weight:600;}
+.card-body{padding:20px;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl thead th{padding:9px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);background:#FAFAFA;text-align:left;}
+.tbl tbody td{padding:12px 14px;font-size:13px;font-weight:600;border-bottom:1px solid #F9FAFB;vertical-align:middle;}
+.tbl tbody tr:last-child td{border-bottom:none;}.tbl tbody tr:hover td{background:#FAFBFF;}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.b-active{background:rgba(16,185,129,.1);color:var(--green);}
+.b-done{background:rgba(124,58,237,.1);color:var(--purple);}
+.b-pending{background:rgba(249,115,22,.1);color:var(--orange);}
+.prog-wrap{background:#F3F4F6;border-radius:6px;height:7px;min-width:80px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--purple),var(--teal));}
+.act-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #F9FAFB;}
+.act-item:last-child{border-bottom:none;}
+.act-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.act-body h4{font-size:13px;font-weight:700;margin-bottom:2px;}.act-body p{font-size:12px;color:var(--text3);}
+.act-time{margin-left:auto;font-size:11px;color:var(--text3);white-space:nowrap;padding-top:2px;}
+
+/* Registration Form */
+.reg-section{background:var(--white);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.04);overflow:hidden;margin-bottom:16px;}
+.reg-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.reg-head h3{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;}
+.reg-body{padding:22px 24px;}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.fg{margin-bottom:0;}
+.fg.full{grid-column:1/-1;}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.fg input,.fg select,.fg textarea{width:100%;background:#F9FAFB;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Nunito',sans-serif;font-size:13.5px;color:var(--text);outline:none;transition:border-color .2s;resize:vertical;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--purple-lt);background:#fff;}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--text3);}
+.form-divider{font-size:12px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 14px;padding-bottom:6px;border-bottom:1.5px solid var(--border);}
+.btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;transition:all .18s;}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-lt));color:#fff;box-shadow:0 4px 14px rgba(124,58,237,.25);}.btn-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-outline{background:#F9FAFB;border:1.5px solid var(--border);color:var(--text2);}.btn-outline:hover{border-color:var(--purple-lt);color:var(--purple);}
+
+/* Tabs */
+.tab-bar{display:flex;gap:4px;background:var(--white);border-radius:12px;padding:5px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.04);width:fit-content;}
+.tab-btn{padding:9px 22px;border-radius:9px;border:none;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--text3);background:transparent;}
+.tab-btn.active{background:var(--purple);color:#fff;box-shadow:0 4px 14px rgba(124,58,237,.3);}
+.tab-btn:not(.active):hover{background:var(--purple-bg);color:var(--purple);}
+.tab-pane{display:none;}.tab-pane.active{display:block;}
+
+.fu{opacity:0;transform:translateY(14px);animation:fu .42s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes fu{to{opacity:1;transform:none;}}
+.d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}.d5{animation-delay:.2s}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎓</div>
+    <h2>NextGen Tech</h2>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">MAIN</div>
+    <a href="user-dashboard.html" class="sb-link active"><span class="s-icon">📊</span>Dashboard</a>
+    <div class="sb-label">TRAINING</div>
+    <a href="courses.html" class="sb-link"><span class="s-icon">📚</span>My Courses</a>
+    <a href="students.html" class="sb-link"><span class="s-icon">🎓</span>My Students<span class="sb-badge" id="pendingBadge" style="display:none;"></span></a>
+    <a href="attendance.html" class="sb-link"><span class="s-icon">✅</span>Attendance</a>
+    <a href="notices.html" class="sb-link"><span class="s-icon">📢</span>Notices</a>
+    <div class="sb-label">REGISTRATION</div>
+    <a href="#regSection" class="sb-link" onclick="scrollToReg()"><span class="s-icon">📋</span>Register Student</a>
+    <div class="sb-label">ACCOUNT</div>
+    <a href="settings.html" class="sb-link"><span class="s-icon">⚙️</span>Settings</a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-av" id="sidebarInitials">U</div>
+    <div class="user-info-text"><h4 id="sidebarName">User</h4><p id="sidebarRole">Trainer</p></div>
+    <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div style="font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;">My Dashboard</div>
+      <div style="font-size:11.5px;color:var(--text3);">Portal <span style="color:var(--purple);">/ Dashboard</span></div>
+    </div>
+    <div class="search-bar" style="margin-left:20px;">
+      <input type="text" placeholder="Search students, courses...">
+    </div>
+    <div class="topbar-right">
+      <div class="tb-icon-btn">🔔<div class="tb-notif"></div></div>
+      <div class="tb-icon-btn">⚙️</div>
+      <div class="tb-profile">
+        <div class="tb-av" id="topbarInitials">U</div>
+        <div class="tb-info"><span id="topbarName">User</span><small id="topbarRole">Trainer</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- Welcome -->
+    <div class="welcome-banner fu d1">
+      <div class="wb-left">
+        <h2>Welcome, <span id="welcomeName">Trainer</span>! 👋</h2>
+        <p>Here's your training overview and student management panel.</p>
+      </div>
+      <div class="wb-icon">👨‍🏫</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-row">
+      <div class="stat-card fu d1"><div><div class="sc-label">My Courses</div><div class="sc-val" style="color:var(--purple);" id="statCourses">—</div></div><div class="sc-icon" style="background:var(--purple-soft);">📚</div></div>
+      <div class="stat-card fu d2"><div><div class="sc-label">My Students</div><div class="sc-val" style="color:var(--teal);" id="statStudents">—</div></div><div class="sc-icon" style="background:var(--teal-bg);">🎓</div></div>
+      <div class="stat-card fu d3"><div><div class="sc-label">Pending Approval</div><div class="sc-val" style="color:var(--orange);" id="statPending">—</div></div><div class="sc-icon" style="background:var(--orange-bg);">⏳</div></div>
+      <div class="stat-card fu d4"><div><div class="sc-label">Completed</div><div class="sc-val" style="color:var(--green);" id="statCompleted">—</div></div><div class="sc-icon" style="background:var(--green-bg);">✅</div></div>
+    </div>
+
+    <!-- Tabs: My Students / Activity -->
+    <div class="tab-bar fu d2">
+      <button class="tab-btn active" onclick="switchTab(this,'students')">My Students</button>
+      <button class="tab-btn" onclick="switchTab(this,'activity')">Recent Activity</button>
+    </div>
+
+    <div id="tab-students" class="tab-pane active">
+      <div class="card fu d3" style="margin-bottom:16px;">
+        <div class="card-head">
+          <h3>My Enrolled Students</h3>
+          <a href="students.html" style="font-size:12px;color:var(--purple);font-weight:700;text-decoration:none;">View All →</a>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Student</th><th>Course</th><th>Progress</th><th>Status</th></tr></thead>
+          <tbody id="myStudentTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-activity" class="tab-pane">
+      <div class="card fu d3" style="margin-bottom:16px;">
+        <div class="card-head"><h3>Recent Activity</h3></div>
+        <div class="card-body" id="actFeed"></div>
+      </div>
+    </div>
+
+    <!-- Student Registration Form -->
+    <div class="reg-section fu d4" id="regSection">
+      <div class="reg-head">
+        <h3>📋 Student Registration Form</h3>
+        <span style="font-size:12px;color:var(--text3);">Submitted registrations go to Admin for approval</span>
+      </div>
+      <div class="reg-body">
+
+        <div class="form-divider">Personal Information</div>
+        <div class="form-grid-2" style="margin-bottom:16px;">
+          <div class="fg"><label>First Name *</label><input type="text" id="r_fn" placeholder="First name"></div>
+          <div class="fg"><label>Last Name *</label><input type="text" id="r_ln" placeholder="Last name"></div>
+          <div class="fg"><label>Email Address *</label><input type="email" id="r_email" placeholder="student@email.com"></div>
+          <div class="fg"><label>Phone Number</label><input type="tel" id="r_phone" placeholder="+91 XXXXX XXXXX"></div>
+          <div class="fg"><label>Date of Birth</label><input type="date" id="r_dob"></div>
+          <div class="fg"><label>Gender</label>
+            <select id="r_gender"><option value="">Select gender</option><option>Male</option><option>Female</option><option>Other</option></select>
+          </div>
+        </div>
+
+        <div class="form-divider">Academic Information</div>
+        <div class="form-grid-3" style="margin-bottom:16px;">
+          <div class="fg"><label>Course *</label>
+            <select id="r_course">
+              <option value="">Select course</option>
+              <option>Full Stack Development</option>
+              <option>Data Science & ML</option>
+              <option>Cybersecurity</option>
+              <option>UI/UX Design</option>
+              <option>AWS Cloud Computing</option>
+              <option>DevOps Engineering</option>
+            </select>
+          </div>
+          <div class="fg"><label>Qualification</label><input type="text" id="r_qual" placeholder="B.Tech, MCA, BSc..."></div>
+          <div class="fg"><label>Batch / Start Date</label><input type="date" id="r_start"></div>
+        </div>
+
+        <div class="form-divider">Address</div>
+        <div class="form-grid-2" style="margin-bottom:16px;">
+          <div class="fg"><label>City</label><input type="text" id="r_city" placeholder="City"></div>
+          <div class="fg"><label>State</label><input type="text" id="r_state" placeholder="State"></div>
+          <div class="fg full"><label>Full Address</label><textarea id="r_addr" rows="2" placeholder="Door No, Street, Locality..."></textarea></div>
+        </div>
+
+        <div class="form-divider">Additional Notes</div>
+        <div class="fg" style="margin-bottom:16px;"><label>Remarks / Notes</label><textarea id="r_notes" rows="2" placeholder="Any special requirements or notes..."></textarea></div>
+
+        <div class="btn-row">
+          <button class="btn btn-outline" onclick="clearRegForm()">🔄 Clear Form</button>
+          <button class="btn btn-primary" onclick="submitReg()">📋 Submit Registration</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const COLORS=['#7C3AED','#06B6D4','#F97316','#10B981','#8B5CF6'];
+function avColor(n){let h=0;for(const c of n)h=(h+c.charCodeAt(0))%COLORS.length;return COLORS[h];}
+function initials(n){return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+
+function logout(){fetch('auth.php?action=logout',{credentials:'include'}).finally(()=>{sessionStorage.clear();location.href='login.html';});}
+function scrollToReg(){setTimeout(()=>document.getElementById('regSection').scrollIntoView({behavior:'smooth'}),100);}
+function switchTab(btn,name){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active'); document.getElementById('tab-'+name).classList.add('active');
+}
+
+async function loadStats(){
+  try {
+    const [sRes, cRes] = await Promise.all([
+      fetch('students.php?action=list',{credentials:'include'}),
+      fetch('courses.php?action=list',{credentials:'include'})
+    ]);
+    const sj = await sRes.json();
+    const cj = await cRes.json();
+
+    const all       = sj.success ? sj.data : [];
+    const pending   = all.filter(s=>s.status==='Pending').length;
+    const completed = all.filter(s=>s.status==='Completed').length;
+    const courses   = cj.success ? cj.data.length : 0;
+
+    document.getElementById('statCourses').textContent   = courses;
+    document.getElementById('statStudents').textContent  = all.length;
+    document.getElementById('statPending').textContent   = pending;
+    document.getElementById('statCompleted').textContent = completed;
+
+    // Show pending badge on sidebar
+    const badge = document.getElementById('pendingBadge');
+    if(badge && pending > 0){ badge.textContent = pending; badge.style.display = ''; }
+  } catch(e) { console.warn('Stats error:', e); }
+}
+
+async function loadMyStudents(){
+  const r=await fetch('students.php?action=list',{credentials:'include'});
+  const j=await r.json();
+  const tbody=document.getElementById('myStudentTbody');
+  if(!j.success||!j.data.length){
+    tbody.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:36px;color:#9CA3AF;font-size:13px;">
+      <div style="font-size:32px;margin-bottom:8px;">🎓</div>No students registered yet. Use the form below to register your first student.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=j.data.map(s=>{
+    const prog=Math.round(parseFloat(s.avg_progress)||0);
+    const badge=s.status==='Active'?'b-active':s.status==='Completed'?'b-done':'b-pending';
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:9px;">
+        <div style="width:30px;height:30px;border-radius:50%;background:${avColor(s.name)};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;">${initials(s.name)}</div>
+        <span style="font-weight:700;">${s.name}</span>
+      </div></td>
+      <td style="font-size:12.5px;color:var(--text2);">${s.courses||'—'}</td>
+      <td><div style="display:flex;align-items:center;gap:8px;">
+        <div class="prog-wrap" style="flex:1;"><div class="prog-fill" style="width:${prog}%;"></div></div>
+        <span style="font-size:12px;font-weight:800;color:var(--purple);min-width:32px;">${prog}%</span>
+      </div></td>
+      <td><span class="badge ${badge}">${s.status}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadActivity(){
+  const feed=document.getElementById('actFeed');
+  let j;
+  try {
+    const r=await fetch('dashboard.php?action=activity&limit=5',{credentials:'include'});
+    j=await r.json();
+  } catch(e) {
+    feed.innerHTML='<div style="text-align:center;padding:24px;color:#9CA3AF;font-size:13px;">Activity unavailable.</div>';return;
+  }
+  if(!j.success||!j.data||!j.data.length){
+    feed.innerHTML='<div style="text-align:center;padding:24px;color:#9CA3AF;font-size:13px;">No activity yet.</div>';return;
+  }
+  const icons={'LOGIN':'👤','STUDENT_CREATED':'🎓','STUDENT_APPROVED':'✅','CERT_GENERATED':'📜','COURSE_CREATED':'📚'};
+  const bgs={'STUDENT_CREATED':'#EDE9FE','STUDENT_APPROVED':'#ECFDF5','CERT_GENERATED':'#EFF6FF','COURSE_CREATED':'#FFF7ED','LOGIN':'#F3F4F6'};
+  feed.innerHTML=j.data.map(a=>`<div class="act-item">
+    <div class="act-ic" style="background:${bgs[a.action]||'#F3F4F6'}">${icons[a.action]||'⚡'}</div>
+    <div class="act-body"><h4>${a.action.replace(/_/g,' ')}</h4><p>${a.description||''}</p></div>
+    <div class="act-time">${new Date(a.logged_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}</div>
+  </div>`).join('');
+}
+
+async function loadCourseDropdown(){
+  const r=await fetch('courses.php?action=list&status=Active',{credentials:'include'});
+  const j=await r.json();
+  const sel=document.getElementById('r_course');
+  if(!sel||!j.success)return;
+  sel.innerHTML='<option value="">Select course…</option>'+j.data.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+async function submitReg(){
+  const fn=document.getElementById('r_fn').value.trim(), ln=document.getElementById('r_ln').value.trim();
+  const email=document.getElementById('r_email').value.trim(), course=document.getElementById('r_course').value;
+  if(!fn||!ln){showToast('⚠️ First and last name required','#FEF3C7','#92400E');return;}
+  if(!email)  {showToast('⚠️ Email required','#FEF3C7','#92400E');return;}
+  if(!course) {showToast('⚠️ Please select a course','#FEF3C7','#92400E');return;}
+  const body={
+    first_name:fn, last_name:ln, email,
+    phone:document.getElementById('r_phone').value,
+    dob:  document.getElementById('r_dob').value,
+    gender:document.getElementById('r_gender').value,
+    qualification:document.getElementById('r_qual').value,
+    city: document.getElementById('r_city').value,
+    state:document.getElementById('r_state').value,
+    address_line1:document.getElementById('r_addr').value,
+    notes:document.getElementById('r_notes').value,
+    courses:[{course_id:course, start_date:document.getElementById('r_start').value, mode:'Offline'}]
+  };
+  const r=await fetch('students.php?action=create',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json();
+  if(j.success){
+    showToast('✅ Registration submitted for admin approval!','#D1FAE5','#065F46');
+    clearRegForm(); loadMyStudents(); loadStats();
+  } else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+function clearRegForm(){
+  ['r_fn','r_ln','r_email','r_phone','r_dob','r_qual','r_city','r_state','r_addr','r_notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const g=document.getElementById('r_gender');if(g)g.value='';
+  const c=document.getElementById('r_course');if(c)c.value='';
+  const s=document.getElementById('r_start');if(s)s.value='';
+}
+
+function showToast(msg,bg,color){
+  const old=document.querySelector('.toast');if(old)old.remove();
+  const t=document.createElement('div');t.className='toast';
+  t.style.cssText=`position:fixed;bottom:24px;right:24px;background:${bg};color:${color};border:1.5px solid ${color}44;border-radius:12px;padding:13px 20px;font-size:13px;font-weight:700;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.15);`;
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},4000);
+}
+
+// ── Init ──────────────────────────────────────────────────────
+(async()=>{
+  try {
+    const r = await fetch('auth.php?action=me',{credentials:'include'});
+    if(!r.ok) { location.href='login.html'; return; }
+    const j = await r.json();
+    if(!j.success){ location.href='login.html'; return; }
+    if(j.data.role==='Admin'){ location.href='dashboard.html'; return; }
+
+    const u = j.data;
+    sessionStorage.setItem('ng_user', JSON.stringify(u));
+    const ini = initials(u.name);
+    document.getElementById('sidebarInitials').textContent = ini;
+    document.getElementById('sidebarName').textContent     = u.name;
+    document.getElementById('sidebarRole').textContent     = u.role || 'Trainer';
+    document.getElementById('topbarInitials').textContent  = ini;
+    document.getElementById('topbarName').textContent      = u.name;
+    document.getElementById('topbarRole').textContent      = u.role || 'Trainer';
+    document.getElementById('welcomeName').textContent     = u.name.split(' ')[0];
+
+    // Load all sections independently so one failure doesn't block others
+    loadStats();
+    loadMyStudents();
+    loadActivity();
+    loadCourseDropdown();
+  } catch(e) {
+    console.error('Auth error:', e);
+    location.href = 'login.html';
+  }
+})();
+</script>
+</body>
+</html>

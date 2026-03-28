@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certificate Generator · NextGen Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7C3AED;--purple-lt:#8B5CF6;--purple-bg:#F5F3FF;--purple-soft:#EDE9FE;--teal:#06B6D4;--teal-bg:#ECFEFF;--orange:#F97316;--orange-bg:#FFF7ED;--green:#10B981;--green-bg:#ECFDF5;--red:#EF4444;--gold:#D97706;--gold-bg:#FFFBEB;--bg:#F4F0FB;--white:#FFFFFF;--text:#1E1B4B;--text2:#6B7280;--text3:#9CA3AF;--border:#E5E7EB;--sidebar-w:230px;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;overflow:hidden;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);display:flex;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:10px;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--white);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;box-shadow:4px 0 20px rgba(124,58,237,.07);}
+.sb-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--purple-lt));display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;}
+.sb-logo h2{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--purple);}
+.sb-nav{padding:12px 10px;flex:1;}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:10px 11px 4px;font-weight:700;}
+.sb-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .16s;text-decoration:none;margin-bottom:2px;position:relative;}
+.sb-link:hover{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--purple);}
+.s-icon{font-size:15px;width:18px;text-align:center;}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;}
+.sb-badge.green{background:var(--green);}
+.sidebar-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.user-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.user-info-text h4{font-size:13px;font-weight:700;}.user-info-text p{font-size:11px;color:var(--text3);}
+.logout-btn{margin-left:auto;background:none;border:none;font-size:17px;cursor:pointer;color:var(--text3);transition:color .2s;}.logout-btn:hover{color:var(--red);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:62px;flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 26px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(124,58,237,.05);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-icon-btn{width:36px;height:36px;border-radius:10px;background:#F9FAFB;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;position:relative;}
+.tb-notif{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid #fff;}
+.tb-profile{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 5px;background:#F9FAFB;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;}
+.tb-av{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+.tb-info span{display:block;font-size:12.5px;font-weight:700;line-height:1.2;}.tb-info small{font-size:11px;color:var(--text3);}
+.page{flex:1;overflow-y:auto;padding:22px 26px;}
+
+/* ── GENERATOR TOOL ── */
+.tool-wrap{background:var(--white);border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.06);overflow:hidden;margin-bottom:22px;}
+.tool-topbar{background:linear-gradient(135deg,var(--purple),var(--purple-lt));padding:0 0 0 0;display:flex;align-items:center;}
+.tool-title{color:#fff;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;padding:13px 20px;flex:1;}
+.tool-actions{display:flex;}
+.tool-act-btn{width:14px;height:14px;border-radius:50%;margin:0 4px;border:none;cursor:pointer;}
+.ta-red{background:#FF5F57;}.ta-yellow{background:#FFBD2E;}.ta-green{background:#28CA41;}
+
+/* Main tabs (like X509 top tabs) */
+.main-tabs{display:flex;background:#F8F7FF;border-bottom:1.5px solid var(--border);}
+.main-tab{padding:13px 24px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .18s;border:none;background:transparent;margin-bottom:-1.5px;}
+.main-tab.active{color:var(--purple);background:var(--white);border-bottom-color:var(--purple);border-top:1.5px solid var(--border);border-left:1.5px solid var(--border);border-right:1.5px solid var(--border);border-radius:6px 6px 0 0;margin-top:3px;}
+.main-tab:not(.active):hover{color:var(--text);background:var(--purple-bg);}
+
+/* Sub tabs (Required / Optional like X509) */
+.sub-tabs{display:flex;padding:0 20px;background:var(--white);border-bottom:1px solid #F0EEF8;}
+.sub-tab{padding:10px 18px;font-size:12.5px;font-weight:700;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;border:none;background:transparent;margin-bottom:-1px;}
+.sub-tab.active{color:var(--purple);border-bottom-color:var(--purple);}
+
+.tool-body{padding:22px 24px;}
+.tab-pane{display:none;}.tab-pane.active{display:block;}
+
+/* Form rows like X509 */
+.form-row-tool{display:flex;align-items:center;margin-bottom:12px;gap:10px;}
+.form-row-tool label{font-size:12.5px;font-weight:700;color:var(--text);min-width:220px;flex-shrink:0;}
+.form-row-tool .req{color:var(--red);font-size:11px;margin-left:2px;}
+.field-wrap{flex:1;display:flex;align-items:center;gap:8px;}
+.tool-input{width:100%;background:#F9FAFB;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.tool-input:focus{border-color:var(--purple-lt);background:#fff;}
+.tool-input::placeholder{color:var(--text3);}
+.tool-select{background:#F9FAFB;border:1.5px solid var(--border);border-radius:8px;padding:9px 30px 9px 12px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239CA3AF' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.tool-select:focus{border-color:var(--purple-lt);}
+.select-wrap{position:relative;min-width:160px;}
+.file-btn{padding:8px 14px;background:#F0EEF8;border:1.5px solid var(--border);border-radius:8px;font-family:'Nunito',sans-serif;font-size:12.5px;font-weight:700;color:var(--purple);cursor:pointer;white-space:nowrap;transition:all .18s;}.file-btn:hover{background:var(--purple);color:#fff;}
+.hash-label{font-size:12.5px;font-weight:700;color:var(--text2);white-space:nowrap;}
+.country-code{width:50px;text-align:center;}
+.mandatory-note{font-size:11px;color:var(--text3);text-align:right;margin-top:14px;}
+.mandatory-note span{color:var(--red);}
+
+/* Generator footer */
+.gen-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--border);background:#FAFAFA;}
+.btn-gen{padding:10px 22px;border-radius:9px;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;transition:all .18s;}
+.btn-gen-primary{background:linear-gradient(135deg,var(--purple),var(--purple-lt));color:#fff;box-shadow:0 4px 14px rgba(124,58,237,.25);}.btn-gen-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-gen-outline{background:var(--white);border:1.5px solid var(--border);color:var(--text2);}.btn-gen-outline:hover{border-color:var(--purple-lt);color:var(--purple);}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--white);border-radius:14px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.04);}
+.sc-label{font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;}
+.sc-val{font-family:'Poppins',sans-serif;font-size:26px;font-weight:700;line-height:1;}
+.sc-icon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+
+/* Certificates list */
+.card{background:var(--white);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.04);overflow:hidden;}
+.card-head{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.card-head h3{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl thead th{padding:9px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);background:#FAFAFA;text-align:left;}
+.tbl tbody td{padding:12px 16px;font-size:13px;font-weight:600;border-bottom:1px solid #F9FAFB;vertical-align:middle;}
+.tbl tbody tr:last-child td{border-bottom:none;}.tbl tbody tr:hover td{background:#FAFBFF;}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.b-sent{background:rgba(16,185,129,.1);color:var(--green);}
+.b-pending{background:rgba(249,115,22,.1);color:var(--orange);}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:11.5px;font-weight:700;transition:all .18s;}
+.btn-outline{background:#F9FAFB;border:1.5px solid var(--border);color:var(--text2);}.btn-outline:hover{border-color:var(--purple-lt);color:var(--purple);}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-lt));color:#fff;}.btn-primary:hover{opacity:.88;}
+
+/* Preview modal */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:#fff;border-radius:18px;width:650px;max-width:95%;max-height:92vh;overflow-y:auto;transform:scale(.96) translateY(16px);transition:transform .3s cubic-bezier(.16,1,.3,1);}
+.modal-overlay.show .modal{transform:scale(1) translateY(0);}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-head h3{font-family:'Poppins',sans-serif;font-size:16px;font-weight:600;}
+.modal-close{width:28px;height:28px;background:#F3F4F6;border:none;border-radius:7px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}.modal-close:hover{background:rgba(239,68,68,.1);color:var(--red);}
+.modal-body{padding:22px;}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+
+.fu{opacity:0;transform:translateY(14px);animation:fu .42s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes fu{to{opacity:1;transform:none;}}
+.d1{animation-delay:.04s}.d2{animation-delay:.09s}.d3{animation-delay:.14s}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎓</div>
+    <h2>NextGen Tech</h2>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">MAIN</div>
+    <a class="sb-link" href="dashboard.html"><span class="s-icon">📊</span>Dashboard</a>
+    <div class="sb-label">MANAGEMENT</div>
+    <a class="sb-link" href="users.html"><span class="s-icon">👥</span>User Management</a>
+    <a class="sb-link" href="students.html"><span class="s-icon">🎓</span>Students<span class="sb-badge">5</span></a>
+    <a class="sb-link" href="student-registration.html"><span class="s-icon">📋</span>Registration</a>
+    <div class="sb-label">TRAINING</div>
+    <a class="sb-link" href="courses.html"><span class="s-icon">📚</span>Courses</a>
+    <a class="sb-link active" href="certificates.html"><span class="s-icon">📜</span>Certificates<span class="sb-badge green">3</span></a>
+    <div class="sb-label">SYSTEM</div>
+    <a class="sb-link" href="#"><span class="s-icon">📢</span>Notices</a>
+    <a class="sb-link" href="#"><span class="s-icon">⚙️</span>Settings</a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-av">AD</div>
+    <div class="user-info-text"><h4>Admin User</h4><p>Administrator</p></div>
+    <button class="logout-btn" onclick="logout()">⏻</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div style="font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;">Certificate Generator</div>
+      <div style="font-size:11.5px;color:var(--text3);">Portal <span style="color:var(--purple);">/ Certificates</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="tb-icon-btn">🔔<div class="tb-notif"></div></div>
+      <div class="tb-icon-btn">⚙️</div>
+      <div class="tb-profile">
+        <div class="tb-av">AD</div>
+        <div class="tb-info"><span>Admin User</span><small>Administrator</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- Stats -->
+    <div class="stats-row fu">
+      <div class="stat-card"><div><div class="sc-label">Total Issued</div><div class="sc-val" style="color:var(--gold);">1,042</div></div><div class="sc-icon" style="background:var(--gold-bg);">📜</div></div>
+      <div class="stat-card"><div><div class="sc-label">Sent</div><div class="sc-val" style="color:var(--green);">998</div></div><div class="sc-icon" style="background:var(--green-bg);">📤</div></div>
+      <div class="stat-card"><div><div class="sc-label">Pending Send</div><div class="sc-val" style="color:var(--orange);">44</div></div><div class="sc-icon" style="background:var(--orange-bg);">⏳</div></div>
+      <div class="stat-card"><div><div class="sc-label">Delivery Rate</div><div class="sc-val" style="color:var(--purple);">96%</div></div><div class="sc-icon" style="background:var(--purple-soft);">✅</div></div>
+    </div>
+
+    <!-- Generator Tool (X509v3-style) -->
+    <div class="tool-wrap fu d1">
+      <!-- Titlebar -->
+      <div class="tool-topbar">
+        <div style="display:flex;align-items:center;padding:12px 16px;gap:8px;">
+          <div class="tool-act-btn ta-red"></div>
+          <div class="tool-act-btn ta-yellow"></div>
+          <div class="tool-act-btn ta-green"></div>
+        </div>
+        <div class="tool-title">📜 NextGen Certificate Generator</div>
+      </div>
+
+      <!-- Main Tabs -->
+      <div class="main-tabs">
+        <button class="main-tab active" onclick="switchMain(this,'generator')">Certificate Generator</button>
+        <button class="main-tab" onclick="switchMain(this,'parser')">Certificate Parser</button>
+        <button class="main-tab" onclick="switchMain(this,'issued')">Issued Certificates</button>
+        <button class="main-tab" onclick="switchMain(this,'about')">About</button>
+      </div>
+
+      <!-- Generator Panel -->
+      <div id="main-generator">
+        <!-- Sub Tabs -->
+        <div class="sub-tabs">
+          <button class="sub-tab active" onclick="switchSub(this,'required')">Required Information</button>
+          <button class="sub-tab" onclick="switchSub(this,'optional')">Optional Information</button>
+        </div>
+
+        <!-- Required Info -->
+        <div class="tool-body">
+          <div id="sub-required" class="tab-pane active">
+
+            <div class="form-row-tool">
+              <label>Student <span class="req">*</span></label>
+              <div class="field-wrap">
+                <div class="select-wrap" style="flex:1;">
+                  <select class="tool-input tool-select" id="g_student_id" onchange="livePreview()">
+                    <option value="">Loading students…</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row-tool">
+              <label>Course / Program <span class="req">*</span></label>
+              <div class="field-wrap">
+                <div class="select-wrap" style="flex:1;">
+                  <select class="tool-input tool-select" id="g_course_id" onchange="livePreview()">
+                    <option value="">Loading courses…</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row-tool">
+              <label>Certificate Type <span class="req">*</span></label>
+              <div class="field-wrap" style="gap:16px;">
+                <div class="select-wrap" style="flex:1;">
+                  <select class="tool-input tool-select" id="g_type" onchange="livePreview()">
+                    <option>Certificate of Completion</option>
+                    <option>Certificate of Excellence</option>
+                    <option>Certificate of Participation</option>
+                    <option>Certificate of Achievement</option>
+                  </select>
+                </div>
+                <span class="hash-label">Grade / Result</span>
+                <div class="select-wrap">
+                  <select class="tool-input tool-select" id="g_grade" onchange="livePreview()">
+                    <option>Distinction</option>
+                    <option>First Class</option>
+                    <option>Pass</option>
+                    <option>Merit</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row-tool">
+              <label>Issue Date <span class="req">*</span></label>
+              <div class="field-wrap">
+                <input type="date" class="tool-input" id="g_date" style="max-width:200px;" oninput="livePreview()">
+                <span class="hash-label" style="margin-left:16px;">Certificate ID</span>
+                <input type="text" class="tool-input" id="g_certid" placeholder="auto-generated" style="max-width:160px;" readonly>
+              </div>
+            </div>
+
+            <div class="form-row-tool">
+              <label>Email Address</label>
+              <div class="field-wrap">
+                <input type="email" class="tool-input" id="g_email" placeholder="student@email.com">
+              </div>
+            </div>
+
+            <div class="form-row-tool">
+              <label>Instructor / Trainer</label>
+              <div class="field-wrap">
+                <div class="select-wrap" style="flex:1;">
+                  <select class="tool-input tool-select" id="g_instructor">
+                    <option>Rohit Verma</option>
+                    <option>Anita Sharma</option>
+                    <option>Lata Nair</option>
+                    <option>Dev Patel</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="mandatory-note"><span>*</span> Mandatory Field</div>
+          </div>
+
+          <div id="sub-optional" class="tab-pane">
+            <div class="form-row-tool">
+              <label>Organisation Name</label>
+              <div class="field-wrap"><input type="text" class="tool-input" value="NextGen Technologies" id="g_org"></div>
+            </div>
+            <div class="form-row-tool">
+              <label>Organisation Unit</label>
+              <div class="field-wrap"><input type="text" class="tool-input" placeholder="e.g. Training Division" id="g_unit"></div>
+            </div>
+            <div class="form-row-tool">
+              <label>Country (2 letter code)</label>
+              <div class="field-wrap"><input type="text" class="tool-input country-code" placeholder="IN" maxlength="2" id="g_country"></div>
+            </div>
+            <div class="form-row-tool">
+              <label>State or Province</label>
+              <div class="field-wrap"><input type="text" class="tool-input" placeholder="Tamil Nadu" id="g_state"></div>
+            </div>
+            <div class="form-row-tool">
+              <label>Locality</label>
+              <div class="field-wrap"><input type="text" class="tool-input" placeholder="Chennai" id="g_city"></div>
+            </div>
+            <div class="form-row-tool">
+              <label>Director / Signatory Name</label>
+              <div class="field-wrap"><input type="text" class="tool-input" placeholder="Director name" id="g_director"></div>
+            </div>
+            <div class="form-row-tool">
+              <label>Custom Message</label>
+              <div class="field-wrap"><input type="text" class="tool-input" placeholder="Additional message on certificate" id="g_msg"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gen-footer">
+          <button class="btn-gen btn-gen-outline" onclick="previewCert()">👁️ Preview Certificate</button>
+          <button class="btn-gen btn-gen-primary" onclick="generateCert()">📜 Generate Certificate</button>
+        </div>
+      </div>
+
+      <!-- Parser Panel -->
+      <div id="main-parser" style="display:none;">
+        <div class="tool-body" style="text-align:center;padding:40px;">
+          <div style="font-size:48px;margin-bottom:16px;">🔍</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:600;margin-bottom:8px;">Certificate Parser</div>
+          <p style="color:var(--text3);font-size:13px;margin-bottom:24px;">Upload a certificate file to parse and verify its details.</p>
+          <button class="btn-gen btn-gen-outline" onclick="showToast('📁 File upload coming soon','#EDE9FE','#7C3AED')">📁 Select Certificate File</button>
+        </div>
+      </div>
+
+      <!-- Issued Panel -->
+      <div id="main-issued" style="display:none;padding:20px 24px;">
+        <div style="display:flex;gap:12px;margin-bottom:16px;">
+          <input type="text" placeholder="🔍  Search certificates..." style="flex:1;background:#F9FAFB;border:1.5px solid var(--border);border-radius:10px;padding:9px 14px;font-family:'Nunito',sans-serif;font-size:13px;outline:none;" oninput="filterCerts(this.value)">
+          <select style="background:#F9FAFB;border:1.5px solid var(--border);border-radius:10px;padding:9px 14px;font-family:'Nunito',sans-serif;font-size:13px;outline:none;" onchange="filterCerts('')">
+            <option>All Courses</option><option>Full Stack Development</option><option>Data Science &amp; ML</option><option>Cybersecurity</option>
+          </select>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Cert ID</th><th>Student</th><th>Course</th><th>Issue Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="certTbody"></tbody>
+        </table>
+      </div>
+
+      <!-- About Panel -->
+      <div id="main-about" style="display:none;">
+        <div class="tool-body" style="text-align:center;padding:40px;">
+          <div style="font-size:52px;margin-bottom:14px;">🎓</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px;">NextGen Certificate Generator</div>
+          <p style="color:var(--text3);font-size:13px;max-width:400px;margin:0 auto 16px;line-height:1.7;">Digitally generate, issue and manage training completion certificates for students. This tool is exclusively available to Admin users.</p>
+          <div style="background:var(--purple-bg);border-radius:12px;padding:16px 20px;display:inline-block;text-align:left;">
+            <div style="font-size:12.5px;font-weight:700;color:var(--purple);margin-bottom:8px;">Capabilities</div>
+            <div style="font-size:12.5px;color:var(--text2);line-height:2;">✅ Generate PDF Certificates<br>📧 Email delivery to students<br>🔍 Parse & verify existing certs<br>📊 Track issuance and delivery</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="previewModal">
+      <div class="modal">
+        <div class="modal-head"><h3>📜 Certificate Preview</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-body"><div id="certPreviewArea"></div></div>
+        <div class="modal-foot">
+          <button class="btn btn-outline" onclick="closeModal()">Close</button>
+          <button class="btn btn-primary" onclick="generateFromPreview()">📜 Issue & Send</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Auth guard ────────────────────────────────────────────────
+(async()=>{
+  const r=await fetch('/auth.php?action=me',{credentials:'include'});
+  const j=await r.json();
+  if(!j.success){location.href='login.html';return;}
+  if(j.data.role!=='Admin'){location.href='user-dashboard.html';return;}
+  document.getElementById('g_date').value=new Date().toISOString().split('T')[0];
+  await loadStudentOptions();
+  await loadCourseOptions();
+  renderCerts();
+})();
+
+function logout(){fetch('/auth.php?action=logout',{credentials:'include'}).finally(()=>{sessionStorage.clear();location.href='login.html';});}
+
+// ── Populate dropdowns from DB ────────────────────────────────
+async function loadStudentOptions(){
+  const r=await fetch('/students.php?action=list&status=Approved',{credentials:'include'});
+  const j=await r.json();
+  const sel=document.getElementById('g_student_id');
+  if(!sel||!j.success)return;
+  sel.innerHTML='<option value="">Select student…</option>'+j.data.map(s=>`<option value="${s.id}" data-email="${s.email}">${s.name}</option>`).join('');
+  sel.addEventListener('change',()=>{
+    const opt=sel.options[sel.selectedIndex];
+    const emailEl=document.getElementById('g_email');
+    if(emailEl) emailEl.value=opt.dataset.email||'';
+  });
+}
+
+async function loadCourseOptions(){
+  const r=await fetch('/courses.php?action=list&status=Active',{credentials:'include'});
+  const j=await r.json();
+  const sel=document.getElementById('g_course_id');
+  if(!sel||!j.success)return;
+  sel.innerHTML='<option value="">Select course…</option>'+j.data.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+// ── Tab switching ─────────────────────────────────────────────
+function switchMain(btn,panel){
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  ['generator','parser','issued','about'].forEach(p=>{
+    const el=document.getElementById('main-'+p);
+    if(el)el.style.display=p===panel?'block':'none';
+  });
+  if(panel==='issued')renderCerts();
+}
+function switchSub(btn,panel){
+  document.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#main-generator .tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('sub-'+panel).classList.add('active');
+}
+
+// ── Certificate HTML builder ──────────────────────────────────
+function buildCertHTML(data){
+  return `<div style="background:linear-gradient(135deg,#fff9ef,#fffdf7);color:#1a1200;border-radius:14px;padding:34px 42px;text-align:center;position:relative;overflow:hidden;font-family:Georgia,serif;border:3px solid #c8a84b;box-shadow:0 0 0 5px rgba(200,168,75,0.1);">
+    <div style="position:absolute;inset:8px;border:1px solid rgba(200,168,75,0.35);border-radius:8px;pointer-events:none;"></div>
+    <div style="position:absolute;top:18px;right:18px;width:50px;height:50px;border-radius:50%;border:2.5px solid #c8a84b;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0.55;">🏆</div>
+    <div style="font-size:30px;margin-bottom:4px;">🎓</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#7B4F00;margin-bottom:12px;">${data.org||'NextGen Technologies'}</div>
+    <div style="font-size:28px;font-weight:700;color:#8B6914;letter-spacing:0.05em;margin-bottom:5px;">Certificate</div>
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#AAA;margin-bottom:16px;">${data.type||'of Completion'}</div>
+    <div style="width:70px;height:2px;background:linear-gradient(90deg,transparent,#c8a84b,transparent);margin:0 auto 14px;"></div>
+    <div style="font-size:11px;color:#777;margin-bottom:6px;">This is to certify that</div>
+    <div style="font-size:32px;font-weight:700;color:#2c1810;font-style:italic;margin-bottom:12px;border-bottom:2px solid #c8a84b;padding-bottom:8px;display:inline-block;">${data.student||'Student Name'}</div>
+    <div style="font-size:11.5px;color:#555;line-height:1.7;margin-bottom:12px;">has successfully completed the training program in</div>
+    <div style="font-size:15px;font-weight:700;color:#7B4F00;margin-bottom:5px;">${data.course||'Course Name'}</div>
+    <div style="font-size:10.5px;color:#999;margin-bottom:16px;">with ${data.grade||'Pass'}</div>
+    <div style="display:flex;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid rgba(200,168,75,0.3);">
+      <div style="text-align:center;"><div style="width:80px;height:1px;background:#999;margin:0 auto 4px;"></div><div style="font-size:9.5px;font-weight:700;color:#333;">${data.director||'Director'}</div><div style="font-size:9px;color:#AAA;">NextGen Technologies</div></div>
+      <div style="text-align:center;font-size:9.5px;color:#888;"><div>${data.date||''}</div><div style="width:80px;height:1px;background:#999;margin:6px auto 4px;"></div><div style="font-size:9.5px;font-weight:700;color:#333;">Head of Training</div></div>
+    </div>
+    <div style="position:absolute;bottom:9px;right:14px;font-size:8px;color:#CCC;">${data.certid||''}</div>
+  </div>`;
+}
+
+function getCertFormData(){
+  const sid=document.getElementById('g_student_id');
+  const cid=document.getElementById('g_course_id');
+  return {
+    student_id: sid?.value||'',
+    course_id:  cid?.value||'',
+    student: sid?.options[sid.selectedIndex]?.text||'Student Name',
+    course:  cid?.options[cid.selectedIndex]?.text||'Course Name',
+    type:    document.getElementById('g_type')?.value.replace('Certificate ',''),
+    grade:   document.getElementById('g_grade')?.value,
+    date:    document.getElementById('g_date')?.value ? new Date(document.getElementById('g_date').value).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '',
+    issue_date: document.getElementById('g_date')?.value,
+    org:     document.getElementById('g_org')?.value||'NextGen Technologies',
+    director:document.getElementById('g_director')?.value||'Director',
+    organisation:document.getElementById('g_org')?.value||'NextGen Technologies',
+    org_unit:document.getElementById('g_unit')?.value||'',
+    country: document.getElementById('g_country')?.value||'IN',
+    state:   document.getElementById('g_state')?.value||'',
+    city:    document.getElementById('g_city')?.value||'',
+    director_name:document.getElementById('g_director')?.value||'',
+    custom_message:document.getElementById('g_msg')?.value||'',
+    cert_type:document.getElementById('g_type')?.value||'Certificate of Completion',
+  };
+}
+
+function previewCert(){
+  const d=getCertFormData();
+  if(!d.student_id||!d.course_id){showToast('⚠️ Select Student and Course first','#FEF3C7','#92400E');return;}
+  document.getElementById('certPreviewArea').innerHTML=buildCertHTML(d);
+  document.getElementById('previewModal').classList.add('show');
+}
+function generateFromPreview(){closeModal();generateCert();}
+
+async function generateCert(){
+  const d=getCertFormData();
+  if(!d.student_id||!d.course_id){showToast('⚠️ Select Student and Course','#FEF3C7','#92400E');return;}
+  if(!d.issue_date){showToast('⚠️ Issue date required','#FEF3C7','#92400E');return;}
+  const r=await fetch('/certificates.php?action=generate',{
+    method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      student_id:d.student_id, course_id:d.course_id,
+      cert_type:d.cert_type, grade:d.grade, issue_date:d.issue_date,
+      organisation:d.organisation, org_unit:d.org_unit,
+      country:d.country, state:d.state, city:d.city,
+      director_name:d.director_name, custom_message:d.custom_message
+    })
+  });
+  const j=await r.json();
+  if(j.success){
+    showToast('📜 Certificate generated! ID: '+j.data.cert_code,'#D1FAE5','#065F46');
+    renderCerts();
+  } else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+
+function closeModal(){document.getElementById('previewModal').classList.remove('show');}
+document.getElementById('previewModal')?.addEventListener('click',e=>{if(e.target===document.getElementById('previewModal'))closeModal();});
+
+// ── Certificates list ─────────────────────────────────────────
+async function renderCerts(search=''){
+  const params=new URLSearchParams({action:'list'});
+  if(search)params.append('search',search);
+  const r=await fetch('/certificates.php?'+params,{credentials:'include'});
+  const j=await r.json();
+  const tbody=document.getElementById('certTbody');
+  if(!j.success||!j.data.length){
+    tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:44px;">
+      <div style="font-size:40px;margin-bottom:10px;">📜</div>
+      <div style="font-weight:700;font-size:14px;margin-bottom:4px;">No certificates yet</div>
+      <div style="font-size:12px;color:#9CA3AF;">Generate your first certificate using the Generator tab.</div>
+    </td></tr>`;
+    // Update stat counts to zeros
+    updateStats(0,0,0);
+    return;
+  }
+  const total=j.data.length, sent=j.data.filter(c=>c.delivery_status==='Sent').length, pending=j.data.filter(c=>c.delivery_status==='Pending').length;
+  updateStats(total,sent,pending);
+  tbody.innerHTML=j.data.map(c=>`
+  <tr>
+    <td><code style="font-size:11px;background:#F0EEF8;padding:2px 8px;border-radius:6px;color:var(--purple);">${c.cert_code}</code></td>
+    <td><div style="display:flex;align-items:center;gap:9px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;">${c.student_name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+      <div><div style="font-size:13px;">${c.student_name}</div><div style="font-size:11px;color:var(--text3);">${c.student_email}</div></div>
+    </div></td>
+    <td style="font-size:12.5px;">${c.course_name}</td>
+    <td style="font-size:12px;color:var(--text3);">${new Date(c.issue_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+    <td><span class="badge ${c.delivery_status==='Sent'?'b-sent':'b-pending'}">${c.delivery_status}</span></td>
+    <td><div style="display:flex;gap:6px;">
+      <button class="btn btn-outline" onclick="viewCertById(${c.id})">👁️</button>
+      ${c.delivery_status==='Pending'?`<button class="btn btn-primary" onclick="sendCert(${c.id})">📧 Send</button>`:''}
+    </div></td>
+  </tr>`).join('');
+}
+
+function updateStats(total,sent,pending){
+  const els=[...document.querySelectorAll('.stat-num')];
+  if(els[0])els[0].textContent=total;
+  if(els[1])els[1].textContent=sent;
+  if(els[2])els[2].textContent=pending;
+  if(els[3])els[3].textContent=total>0?Math.round((sent/total)*100)+'%':'0%';
+}
+
+function filterCerts(q){renderCerts(q);}
+
+async function viewCertById(id){
+  const r=await fetch(`/certificates.php?action=get&id=${id}`,{credentials:'include'});
+  const j=await r.json();
+  if(!j.success){showToast('Error loading certificate');return;}
+  const c=j.data;
+  const date=new Date(c.issue_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('certPreviewArea').innerHTML=buildCertHTML({
+    student:c.student_name, course:c.course_name,
+    type:c.cert_type.replace('Certificate ',''), grade:c.grade,
+    date, certid:c.cert_code,
+    org:c.organisation||'NextGen Technologies',
+    director:c.director_name||'Director',
+  });
+  document.getElementById('previewModal').classList.add('show');
+}
+
+async function sendCert(id){
+  const r=await fetch('/certificates.php?action=send',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const j=await r.json();
+  if(j.success){renderCerts();showToast('📧 Certificate sent!','#D1FAE5','#065F46');}
+  else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+
+function showToast(msg,bg,color){
+  const old=document.querySelector('.ng-toast');if(old)old.remove();
+  const t=document.createElement('div');t.className='ng-toast';
+  t.style.cssText=`position:fixed;bottom:24px;right:24px;background:${bg||'#1E1B4B'};color:${color||'#fff'};border:1.5px solid ${(color||'#fff')}44;border-radius:12px;padding:13px 20px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);`;
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},4000);
+}
+</script>
+</body>
+</html>

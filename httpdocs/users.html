@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Users · NextGen Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple:      #7C3AED;
+  --purple-lt:   #8B5CF6;
+  --purple-bg:   #F5F3FF;
+  --purple-soft: #EDE9FE;
+  --teal:        #06B6D4;
+  --teal-bg:     #ECFEFF;
+  --orange:      #F97316;
+  --orange-bg:   #FFF7ED;
+  --green:       #10B981;
+  --green-bg:    #ECFDF5;
+  --red:         #EF4444;
+  --bg:          #F4F0FB;
+  --white:       #FFFFFF;
+  --text:        #1E1B4B;
+  --text2:       #6B7280;
+  --text3:       #9CA3AF;
+  --border:      #E5E7EB;
+  --sidebar-w:   220px;
+  --radius:      14px;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); display:flex; }
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#DDD6FE; border-radius:10px; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:var(--sidebar-w); height:100vh;
+  background:var(--white);
+  display:flex; flex-direction:column;
+  position:fixed; left:0; top:0; z-index:100;
+  box-shadow:4px 0 20px rgba(124,58,237,0.07);
+  overflow-y:auto; overflow-x:hidden;
+}
+.sb-logo {
+  padding:20px 18px 16px;
+  display:flex; align-items:center; gap:10px;
+  border-bottom:1px solid #F3F4F6; flex-shrink:0;
+}
+.sb-logo-icon {
+  width:34px; height:34px; border-radius:10px;
+  background:linear-gradient(135deg,var(--purple),var(--purple-lt));
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:16px;
+  box-shadow:0 4px 12px rgba(124,58,237,0.3);
+}
+.sb-logo h2 { font-family:'Poppins',sans-serif; font-size:17px; font-weight:700; color:var(--purple); }
+.sb-nav { padding:12px 10px; flex:1; }
+.sb-group { margin-bottom:2px; }
+.sb-group-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:9px 11px; border-radius:10px; cursor:pointer;
+  transition:all 0.18s; font-size:13px; font-weight:700; color:var(--text2);
+}
+.sb-group-header:hover { background:var(--purple-bg); color:var(--purple); }
+.sb-group-header.active-group { color:var(--purple); }
+.gh-left { display:flex; align-items:center; gap:9px; }
+.gh-icon { font-size:14px; width:16px; text-align:center; }
+.gh-arrow { font-size:9px; transition:transform 0.25s; color:var(--text3); }
+.sb-group-header.open .gh-arrow { transform:rotate(180deg); }
+.sb-children { padding-left:14px; max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+.sb-children.open { max-height:300px; }
+.sb-child {
+  display:flex; align-items:center; gap:7px;
+  padding:7px 12px; border-radius:8px;
+  font-size:13px; font-weight:600; color:var(--text3);
+  cursor:pointer; transition:all 0.16s; text-decoration:none; position:relative;
+}
+.sb-child:hover { color:var(--purple); background:var(--purple-bg); }
+.sb-child.active { color:var(--purple); background:var(--purple-bg); }
+.sb-child.active::before {
+  content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
+  width:3px; height:16px; border-radius:0 3px 3px 0; background:var(--purple);
+}
+.sb-single {
+  display:flex; align-items:center; gap:9px;
+  padding:9px 11px; border-radius:10px;
+  font-size:13px; font-weight:700; color:var(--text2);
+  cursor:pointer; transition:all 0.16s; text-decoration:none; margin-bottom:1px;
+}
+.sb-single:hover { background:var(--purple-bg); color:var(--purple); }
+.s-icon { font-size:14px; width:16px; text-align:center; }
+
+/* ── MAIN ── */
+.main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+
+/* TOPBAR */
+.topbar {
+  height:62px; flex-shrink:0;
+  background:var(--white); border-bottom:1px solid #F3F4F6;
+  padding:0 26px; display:flex; align-items:center; gap:14px;
+  box-shadow:0 2px 10px rgba(124,58,237,0.05);
+}
+.search-bar { flex:1; max-width:360px; position:relative; }
+.search-bar input {
+  width:100%; background:#F9FAFB; border:1.5px solid #F3F4F6;
+  border-radius:12px; padding:9px 14px 9px 38px;
+  font-family:'Nunito',sans-serif; font-size:13px; color:var(--text);
+  outline:none; transition:border-color 0.2s;
+}
+.search-bar input:focus { border-color:var(--purple-lt); }
+.search-bar input::placeholder { color:var(--text3); }
+.search-bar svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text3); width:14px; }
+.topbar-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.tb-icon-btn {
+  width:36px; height:36px; border-radius:10px;
+  background:#F9FAFB; border:1.5px solid #F3F4F6;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:15px; transition:all 0.18s; position:relative;
+}
+.tb-icon-btn:hover { border-color:var(--purple-lt); background:var(--purple-bg); }
+.tb-notif { position:absolute; top:7px; right:7px; width:6px; height:6px; border-radius:50%; background:var(--red); border:1.5px solid #fff; }
+.tb-profile {
+  display:flex; align-items:center; gap:8px;
+  padding:4px 11px 4px 5px;
+  background:#F9FAFB; border:1.5px solid #F3F4F6;
+  border-radius:12px; cursor:pointer;
+}
+.tb-av {
+  width:30px; height:30px; border-radius:9px;
+  background:linear-gradient(135deg,var(--purple),#06B6D4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:800; color:#fff;
+}
+.tb-info span { display:block; font-size:12.5px; font-weight:700; line-height:1.2; }
+.tb-info small { font-size:11px; color:var(--text3); }
+
+/* ── PAGE ── */
+.page { flex:1; overflow-y:auto; padding:24px 28px; }
+.page-title { font-family:'Poppins',sans-serif; font-size:20px; font-weight:700; margin-bottom:18px; }
+
+/* ── TABS ── */
+.tabs-bar {
+  display:flex; gap:4px;
+  background:var(--white);
+  border-radius:12px; padding:5px;
+  margin-bottom:22px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.04);
+  width:fit-content;
+}
+.tab-btn {
+  padding:9px 22px; border-radius:9px; border:none;
+  font-family:'Nunito',sans-serif; font-size:13.5px; font-weight:700;
+  cursor:pointer; transition:all 0.2s; color:var(--text3); background:transparent;
+}
+.tab-btn.active { background:var(--purple); color:#fff; box-shadow:0 4px 14px rgba(124,58,237,0.3); }
+.tab-btn:not(.active):hover { background:var(--purple-bg); color:var(--purple); }
+
+.tab-pane { display:none; animation:fadeUp 0.35s ease both; }
+.tab-pane.active { display:block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+/* ══════════════════════════════
+   TAB 1 — USER ACCOUNTS
+══════════════════════════════ */
+.stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+.stat-card {
+  background:var(--white); border-radius:14px; padding:18px 20px;
+  display:flex; align-items:center; gap:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.04);
+  transition:transform 0.2s,box-shadow 0.2s;
+}
+.stat-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(124,58,237,0.1); }
+.sc-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0; }
+.sc-val { font-family:'Poppins',sans-serif; font-size:24px; font-weight:700; line-height:1; }
+.sc-lbl { font-size:11.5px; color:var(--text3); margin-top:3px; font-weight:600; }
+
+.filter-bar {
+  display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;
+}
+.filter-bar .sb { flex:1; min-width:200px; position:relative; }
+.filter-bar .sb svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text3); width:14px; }
+.filter-bar .sb input {
+  width:100%; background:var(--white); border:1.5px solid var(--border);
+  border-radius:10px; padding:9px 14px 9px 36px;
+  font-family:'Nunito',sans-serif; font-size:13px; color:var(--text); outline:none;
+}
+.filter-bar select {
+  background:var(--white); border:1.5px solid var(--border);
+  border-radius:10px; padding:9px 14px;
+  font-family:'Nunito',sans-serif; font-size:13px; color:var(--text2); outline:none; cursor:pointer;
+}
+.btn-add {
+  background:var(--purple); color:#fff; border:none;
+  border-radius:10px; padding:9px 18px;
+  font-family:'Nunito',sans-serif; font-size:13px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; gap:7px;
+  transition:all 0.2s; white-space:nowrap;
+  box-shadow:0 4px 14px rgba(124,58,237,0.25);
+}
+.btn-add:hover { background:var(--purple-lt); }
+
+.card { background:var(--white); border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.04); overflow:hidden; }
+.card-head { padding:16px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #F9FAFB; }
+.card-head h3 { font-family:'Poppins',sans-serif; font-size:14.5px; font-weight:600; }
+
+.tbl { width:100%; border-collapse:collapse; }
+.tbl thead th {
+  padding:10px 16px; font-size:11px; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.08em;
+  color:var(--text3); background:#FAFAFA; text-align:left;
+}
+.tbl tbody td { padding:12px 16px; font-size:13px; font-weight:600; border-bottom:1px solid #F9FAFB; vertical-align:middle; }
+.tbl tbody tr:last-child td { border-bottom:none; }
+.tbl tbody tr:hover td { background:#FAFBFF; }
+
+.av { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff; flex-shrink:0; }
+.user-cell { display:flex; align-items:center; gap:10px; }
+.user-cell .ui h4 { font-size:13px; font-weight:700; }
+.user-cell .ui p { font-size:11.5px; color:var(--text3); }
+
+.role-pill { display:inline-flex; align-items:center; padding:4px 11px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.04em; }
+.rp-admin      { background:rgba(239,68,68,0.1);    color:#DC2626;  border:1px solid rgba(239,68,68,0.2); }
+.rp-instructor { background:rgba(124,58,237,0.1);   color:var(--purple); border:1px solid rgba(124,58,237,0.2); }
+.rp-staff      { background:rgba(6,182,212,0.1);    color:var(--teal);   border:1px solid rgba(6,182,212,0.2); }
+
+.badge { display:inline-flex; padding:4px 11px; border-radius:20px; font-size:11px; font-weight:700; }
+.b-active   { background:var(--green-bg); color:var(--green); }
+.b-inactive { background:#FEF3C7; color:#92400E; }
+
+.btn-xs { padding:5px 11px; border-radius:7px; font-size:11.5px; font-weight:700; cursor:pointer; border:none; font-family:'Nunito',sans-serif; transition:all 0.15s; }
+.btn-edit { background:#F3F4F6; color:var(--text2); }
+.btn-edit:hover { background:var(--purple-bg); color:var(--purple); }
+.btn-del  { background:#FEF2F2; color:var(--red); }
+.btn-del:hover  { background:var(--red); color:#fff; }
+
+/* ══════════════════════════════
+   TAB 2 — REGISTRATION FORM
+══════════════════════════════ */
+.form-wrap { background:var(--bg); max-width:860px; }
+
+.form-header {
+  display:flex; align-items:flex-start; gap:18px;
+  margin-bottom:24px; padding-bottom:20px;
+  border-bottom:2px solid rgba(124,58,237,0.1);
+}
+.form-logo {
+  width:60px; height:60px; flex-shrink:0; border-radius:50%;
+  border:3px solid var(--purple); background:var(--purple-soft);
+  display:flex; align-items:center; justify-content:center; font-size:24px;
+  box-shadow:0 4px 16px rgba(124,58,237,0.2);
+}
+.form-header h1 { font-family:'Poppins',sans-serif; font-size:21px; font-weight:700; margin-bottom:6px; }
+.form-header p  { font-size:13px; color:var(--text2); line-height:1.6; max-width:520px; }
+
+.sec-title { font-family:'Poppins',sans-serif; font-size:15.5px; font-weight:600; margin:20px 0 12px; }
+.sec-title.req::after { content:' *'; color:var(--red); }
+
+.fg3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px; }
+.fg2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.fg1 { display:grid; grid-template-columns:1fr;    gap:12px; margin-bottom:12px; }
+
+.inp {
+  width:100%; background:var(--white); border:1.5px solid var(--border);
+  border-radius:10px; padding:11px 14px;
+  font-family:'Nunito',sans-serif; font-size:13.5px; color:var(--text);
+  outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+}
+.inp:focus { border-color:var(--purple-lt); box-shadow:0 0 0 3px rgba(124,58,237,0.08); }
+.inp::placeholder { color:#C4C4C4; }
+
+.inp-rel { position:relative; }
+.inp-rel .inp { padding-right:36px; }
+.inp-ico { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none; }
+
+.phone-wrap { display:flex; gap:8px; }
+.country-sel {
+  background:var(--white); border:1.5px solid var(--border); border-radius:10px;
+  padding:11px 10px; font-family:'Nunito',sans-serif; font-size:13px; color:var(--text);
+  outline:none; cursor:pointer; min-width:95px;
+}
+.country-sel:focus { border-color:var(--purple-lt); }
+
+/* Courses table */
+.add-rec-btn {
+  display:inline-flex; align-items:center; gap:7px;
+  padding:8px 16px; border-radius:8px;
+  background:var(--white); border:1.5px solid var(--border);
+  font-family:'Nunito',sans-serif; font-size:13px; font-weight:700;
+  color:var(--purple); cursor:pointer; transition:all 0.2s;
+}
+.add-rec-btn:hover { background:var(--purple-bg); border-color:var(--purple-lt); }
+
+.ctable-wrap { background:var(--white); border:1.5px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
+.ctable-topbar { padding:10px 14px; border-bottom:1px solid var(--border); }
+.ct-head { display:grid; grid-template-columns:2fr 1fr 1.2fr 1.2fr 36px; background:#F9FAFB; border-bottom:1.5px solid var(--border); }
+.ct-th { padding:9px 14px; font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.07em; display:flex; align-items:center; gap:4px; }
+.ct-row { display:grid; grid-template-columns:2fr 1fr 1.2fr 1.2fr 36px; border-bottom:1px solid #F9FAFB; }
+.ct-row:last-child { border-bottom:none; }
+.ct-row:hover { background:#FAFBFF; }
+.ct-td { padding:9px 14px; font-size:13px; font-weight:600; color:var(--text2); display:flex; align-items:center; }
+.ct-td select, .ct-td input { width:100%; background:transparent; border:none; font-family:'Nunito',sans-serif; font-size:13px; color:var(--text); outline:none; cursor:pointer; }
+.del-row-btn { background:none; border:none; cursor:pointer; color:#D1D5DB; font-size:15px; padding:8px; transition:color 0.18s; display:flex; align-items:center; justify-content:center; }
+.del-row-btn:hover { color:var(--red); }
+.empty-msg { padding:14px; text-align:center; font-size:13px; color:var(--text3); font-style:italic; }
+
+.textarea {
+  width:100%; background:var(--white); border:1.5px solid var(--border); border-radius:10px;
+  padding:11px 14px; font-family:'Nunito',sans-serif; font-size:13.5px; color:var(--text);
+  resize:vertical; min-height:80px; outline:none; transition:border-color 0.2s;
+}
+.textarea:focus { border-color:var(--purple-lt); box-shadow:0 0 0 3px rgba(124,58,237,0.08); }
+.textarea::placeholder { color:#C4C4C4; }
+
+.reg-btn {
+  width:100%; margin-top:20px; padding:15px;
+  background:var(--purple); color:#fff; border:none; border-radius:12px;
+  font-family:'Poppins',sans-serif; font-size:14px; font-weight:700;
+  letter-spacing:0.1em; text-transform:uppercase; cursor:pointer;
+  box-shadow:0 6px 20px rgba(124,58,237,0.3); transition:all 0.25s;
+}
+.reg-btn:hover { background:var(--purple-lt); transform:translateY(-2px); box-shadow:0 10px 28px rgba(124,58,237,0.4); }
+.reg-btn:active { transform:none; }
+
+/* Modal */
+.overlay { position:fixed; inset:0; background:rgba(15,10,40,0.45); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(3px); }
+.overlay.show { display:flex; }
+.modal { background:var(--white); border-radius:18px; width:520px; max-width:94vw; box-shadow:0 24px 80px rgba(0,0,0,0.18); animation:fadeUp 0.3s ease both; }
+.modal-head { padding:20px 24px 14px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
+.modal-head h3 { font-family:'Poppins',sans-serif; font-size:16px; font-weight:600; }
+.modal-close { background:none; border:none; font-size:18px; cursor:pointer; color:var(--text3); padding:4px 8px; border-radius:6px; transition:background 0.15s; }
+.modal-close:hover { background:#F3F4F6; color:var(--text); }
+.modal-body { padding:20px 24px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.modal-body .full { grid-column:1/-1; }
+.fg label { display:block; font-size:12px; font-weight:700; color:var(--text2); margin-bottom:5px; }
+.fg input, .fg select, .fg textarea {
+  width:100%; background:#F9FAFB; border:1.5px solid var(--border); border-radius:9px;
+  padding:9px 12px; font-family:'Nunito',sans-serif; font-size:13px; color:var(--text); outline:none;
+}
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color:var(--purple-lt); background:var(--white); }
+.modal-foot { padding:14px 24px 20px; display:flex; gap:10px; justify-content:flex-end; }
+.btn-cancel { background:#F3F4F6; color:var(--text2); border:none; border-radius:9px; padding:9px 18px; font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; cursor:pointer; }
+.btn-cancel:hover { background:#E5E7EB; }
+.btn-save { background:var(--purple); color:#fff; border:none; border-radius:9px; padding:9px 20px; font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(124,58,237,0.25); }
+.btn-save:hover { background:var(--purple-lt); }
+
+/* Toast */
+.toast {
+  position:fixed; bottom:26px; right:26px; z-index:999;
+  background:var(--white); border-radius:12px; padding:13px 20px;
+  font-size:13px; font-weight:600;
+  box-shadow:0 8px 32px rgba(0,0,0,0.14);
+  display:flex; align-items:center; gap:9px;
+  animation:fadeUp 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎓</div>
+    <h2>NextGen</h2>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group">
+      <div class="sb-group-header active-group open" onclick="tog(this)">
+        <div class="gh-left"><span class="gh-icon">🏠</span>Home</div>
+        <span class="gh-arrow">▼</span>
+      </div>
+      <div class="sb-children open">
+        <a class="sb-child" href="dashboard.html">Admin</a>
+        <a class="sb-child active" href="users.html">Users</a>
+      </div>
+    </div>
+    <div class="sb-group">
+      <div class="sb-group-header" onclick="tog(this)">
+        <div class="gh-left"><span class="gh-icon">🎓</span>Students</div>
+        <span class="gh-arrow">▼</span>
+      </div>
+      <div class="sb-children">
+        <a class="sb-child" href="students.html">All Students</a>
+      </div>
+    </div>
+    <div class="sb-group">
+      <div class="sb-group-header" onclick="tog(this)">
+        <div class="gh-left"><span class="gh-icon">👨‍🏫</span>Teachers</div>
+        <span class="gh-arrow">▼</span>
+      </div>
+      <div class="sb-children">
+        <a class="sb-child" href="#">All Teachers</a>
+        <a class="sb-child" href="#">Add Teacher</a>
+      </div>
+    </div>
+    <a class="sb-single" href="#"><span class="s-icon">📚</span>Library</a>
+    <div class="sb-group">
+      <div class="sb-group-header" onclick="tog(this)">
+        <div class="gh-left"><span class="gh-icon">👤</span>Account</div>
+        <span class="gh-arrow">▼</span>
+      </div>
+      <div class="sb-children">
+        <a class="sb-child" href="#">Profile</a>
+        <a class="sb-child" href="#">Settings</a>
+      </div>
+    </div>
+    <a class="sb-single" href="courses.html"><span class="s-icon">🖥️</span>Class</a>
+    <a class="sb-single" href="courses.html"><span class="s-icon">📖</span>Subject</a>
+    <a class="sb-single" href="#"><span class="s-icon">✅</span>Attendance</a>
+    <div class="sb-group">
+      <div class="sb-group-header" onclick="tog(this)">
+        <div class="gh-left"><span class="gh-icon">📝</span>Exam</div>
+        <span class="gh-arrow">▼</span>
+      </div>
+      <div class="sb-children">
+        <a class="sb-child" href="#">Schedule</a>
+        <a class="sb-child" href="#">Results</a>
+      </div>
+    </div>
+    <a class="sb-single" href="#"><span class="s-icon">📢</span>Notice</a>
+    <a class="sb-single" href="certificates.html"><span class="s-icon">📜</span>Certificates</a>
+  </nav>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="search-bar">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="What do you want to find?">
+    </div>
+    <div class="topbar-right">
+      <div class="tb-icon-btn">🔔<div class="tb-notif"></div></div>
+      <div class="tb-icon-btn">💬</div>
+      <div class="tb-profile">
+        <div class="tb-av">AD</div>
+        <div class="tb-info"><span>Admin User</span><small>Admin</small></div>
+        <span style="font-size:10px;color:var(--text3);margin-left:4px;">▾</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE -->
+  <div class="page">
+    <div class="page-title">User Management</div>
+
+    <!-- TABS -->
+    <div class="tabs-bar">
+      <button class="tab-btn active" onclick="switchTab('users',this)">👥 User Accounts</button>
+      <button class="tab-btn" onclick="switchTab('register',this)">📋 Student Registration</button>
+    </div>
+
+    <!-- ══ TAB 1: USER ACCOUNTS ══ -->
+    <div class="tab-pane active" id="tab-users">
+
+      <!-- Stat cards -->
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="sc-icon" style="background:rgba(239,68,68,0.1);">🛡️</div>
+          <div><div class="sc-val" style="color:#DC2626;">3</div><div class="sc-lbl">Admins</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon" style="background:var(--purple-soft);">👨‍🏫</div>
+          <div><div class="sc-val" style="color:var(--purple);">8</div><div class="sc-lbl">Instructors</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon" style="background:var(--teal-bg);">🧑‍💼</div>
+          <div><div class="sc-val" style="color:var(--teal);">5</div><div class="sc-lbl">Staff Members</div></div>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="sb">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search name or email…" id="srch" oninput="renderUsers()">
+        </div>
+        <select id="fRole" onchange="renderUsers()">
+          <option value="">All Roles</option>
+          <option>Admin</option><option>Instructor</option><option>Staff</option>
+        </select>
+        <select id="fStatus" onchange="renderUsers()">
+          <option value="">All Status</option>
+          <option>Active</option><option>Inactive</option>
+        </select>
+        <button class="btn-add" onclick="document.getElementById('addModal').classList.add('show')">
+          <span style="font-size:16px;">+</span> Add User
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="card-head">
+          <h3>All Users</h3>
+          <span style="font-size:12px;color:var(--text3);" id="countLbl"></span>
+        </div>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>User</th><th>Username</th><th>Role</th><th>Department</th><th>Joined</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ TAB 2: STUDENT REGISTRATION ══ -->
+    <div class="tab-pane" id="tab-register">
+      <div class="form-wrap">
+
+        <!-- Header -->
+        <div class="form-header">
+          <div class="form-logo">🎓</div>
+          <div>
+            <h1>Student Registration Form</h1>
+            <p>Fill out the form to apply for the training courses. You can consider your application accepted after you receive a confirmation email.</p>
+          </div>
+        </div>
+
+        <!-- Student Info -->
+        <div class="sec-title">Student Information</div>
+        <div class="fg3">
+          <input class="inp" type="text" placeholder="First Name" id="r_fn">
+          <input class="inp" type="text" placeholder="Middle Name" id="r_mn">
+          <input class="inp" type="text" placeholder="Last Name" id="r_ln">
+        </div>
+        <div class="fg2">
+          <div class="inp-rel">
+            <input class="inp" type="date" id="r_dob" style="color:var(--text2);">
+            <span class="inp-ico">📅</span>
+          </div>
+          <input class="inp" type="text" placeholder="Student ID" id="r_sid">
+        </div>
+
+        <!-- Address -->
+        <div class="sec-title">Address</div>
+        <div class="fg1"><input class="inp" type="text" placeholder="Street Address" id="r_street"></div>
+        <div class="fg2">
+          <input class="inp" type="text" placeholder="City" id="r_city">
+          <input class="inp" type="text" placeholder="State / Province" id="r_state">
+        </div>
+        <div class="fg2">
+          <input class="inp" type="text" placeholder="Country" id="r_country">
+          <input class="inp" type="text" placeholder="ZIP Code" id="r_zip">
+        </div>
+
+        <!-- Contact -->
+        <div class="sec-title">Contact Information</div>
+        <div class="fg2">
+          <input class="inp" type="email" placeholder="E-mail" id="r_email">
+          <div class="phone-wrap">
+            <select class="country-sel" id="r_cc">
+              <option value="+91">🇮🇳 +91</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+61">🇦🇺 +61</option>
+              <option value="+971">🇦🇪 +971</option>
+              <option value="+65">🇸🇬 +65</option>
+            </select>
+            <input class="inp" type="tel" placeholder="Phone Number" id="r_phone" style="flex:1;">
+          </div>
+        </div>
+
+        <!-- Courses -->
+        <div class="sec-title req">Courses</div>
+        <div class="ctable-wrap">
+          <div class="ctable-topbar">
+            <button class="add-rec-btn" onclick="addCourseRow()"><span style="font-size:16px;font-weight:800;">+</span> Add new record</button>
+          </div>
+          <div class="ct-head">
+            <div class="ct-th">Course <span style="font-size:9px;">▼</span></div>
+            <div class="ct-th">Level <span style="font-size:9px;">▼</span></div>
+            <div class="ct-th">Language <span style="font-size:9px;">▼</span></div>
+            <div class="ct-th">Start Date <span style="font-size:9px;">▼</span></div>
+            <div class="ct-th"></div>
+          </div>
+          <div id="courseRows">
+            <div class="empty-msg">No courses added. Click "+ Add new record" to begin.</div>
+          </div>
+        </div>
+        <textarea class="textarea" placeholder="Comments" id="r_comments"></textarea>
+
+        <button class="reg-btn" onclick="submitReg()">REGISTER</button>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main -->
+
+<!-- Add User Modal -->
+<div class="overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Create New User</h3>
+      <button class="modal-close" onclick="document.getElementById('addModal').classList.remove('show')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg"><label>First Name *</label><input type="text" id="f_fn" placeholder="First name"></div>
+      <div class="fg"><label>Last Name *</label><input type="text" id="f_ln" placeholder="Last name"></div>
+      <div class="fg"><label>Email *</label><input type="email" id="f_em" placeholder="user@nextgen.com"></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="f_ph" placeholder="+91 XXXXX XXXXX"></div>
+      <div class="fg"><label>Username *</label><input type="text" id="f_un" placeholder="username"></div>
+      <div class="fg"><label>Role *</label>
+        <select id="f_role"><option value="">Select role…</option><option>Admin</option><option>User</option><option>Staff</option></select>
+      </div>
+      <div class="fg"><label>Department</label>
+        <select id="f_dept"><option value="">Select dept…</option><option>Technology</option><option>Management</option><option>Operations</option><option>Finance</option></select>
+      </div>
+      <div class="fg"><label>Password *</label><input type="password" id="f_pw" placeholder="Set password"></div>
+      <div class="fg full"><label>Notes</label><textarea id="f_notes" rows="2" placeholder="Optional notes…"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="document.getElementById('addModal').classList.remove('show')">Cancel</button>
+      <button class="btn-save" onclick="addUser()">Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Edit User</h3>
+      <button class="modal-close" onclick="document.getElementById('editModal').classList.remove('show')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg full"><label>Full Name</label><input type="text" id="e_name"></div>
+      <div class="fg"><label>Email</label><input type="email" id="e_email"></div>
+      <div class="fg"><label>Role</label><select id="e_role"><option>Admin</option><option>Instructor</option><option>Staff</option></select></div>
+      <div class="fg"><label>Department</label><input type="text" id="e_dept"></div>
+      <div class="fg"><label>Status</label><select id="e_status"><option>Active</option><option>Inactive</option></select></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="document.getElementById('editModal').classList.remove('show')">Cancel</button>
+      <button class="btn-save" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Sidebar ───────────────────────────────────────
+// Admin-only guard
+(function() {
+  const sess = sessionStorage.getItem('ng_user');
+  if (!sess) { window.location.href = 'login.html'; return; }
+  const user = JSON.parse(sess);
+  if (user.role !== 'Admin') { window.location.href = 'user-dashboard.html'; }
+})();
+
+function tog(el) { el.classList.toggle('open'); el.nextElementSibling.classList.toggle('open'); }
+
+// ── Tab Switcher ─────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── User Accounts ─────────────────────────────────────────────
+const COLORS = ['#7C3AED','#06B6D4','#F97316','#10B981','#EF4444','#8B5CF6','#F59E0B','#3B82F6'];
+function avColor(name){let h=0;for(const c of name)h=(h+c.charCodeAt(0))%COLORS.length;return COLORS[h];}
+function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+const roleClass={Admin:'rp-admin',User:'rp-user',Staff:'rp-staff'};
+
+async function renderUsers(){
+  const q=(document.getElementById('srch').value||'').toLowerCase();
+  const role=document.getElementById('fRole').value;
+  const status=document.getElementById('fStatus').value;
+  const params=new URLSearchParams({action:'list'});
+  if(role)   params.append('role',role);
+  if(status) params.append('status',status);
+  if(q)      params.append('search',q);
+  const r=await fetch('users.php?'+params,{credentials:'include'});
+  const j=await r.json();
+  document.getElementById('countLbl').textContent=(j.data?.length||0)+' users';
+  document.getElementById('userTbody').innerHTML=j.success&&j.data.length?j.data.map(u=>`
+  <tr>
+    <td><div class="user-cell">
+      <div class="av" style="background:${avColor(u.name)};">${initials(u.name)}</div>
+      <div class="ui"><h4>${u.name}</h4><p>${u.email}</p></div>
+    </div></td>
+    <td><code style="font-size:11.5px;background:#F3F4F6;padding:3px 9px;border-radius:6px;color:var(--text2);">${u.username}</code></td>
+    <td><span class="role-pill ${roleClass[u.role]||'rp-staff'}">${u.role}</span></td>
+    <td style="color:var(--text2);font-size:12.5px;">${u.department||'—'}</td>
+    <td style="color:var(--text3);font-size:12px;">${new Date(u.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</td>
+    <td><span class="badge ${u.status==='Active'?'b-active':'b-inactive'}">${u.status}</span></td>
+    <td><div style="display:flex;gap:6px;">
+      <button class="btn-xs btn-edit" onclick="openEdit(${u.id},'${u.name}','${u.email}','${u.role}','${u.department||''}','${u.status}')">✏️ Edit</button>
+      <button class="btn-xs btn-del" onclick="delUser(${u.id})">🗑️</button>
+    </div></td>
+  </tr>`).join('')
+  :`<tr><td colspan="7" style="text-align:center;padding:44px;color:var(--text3);font-size:13px;">
+    <div style="font-size:36px;margin-bottom:10px;">👥</div>
+    <div style="font-weight:700;margin-bottom:4px;">No users found</div>
+    <div style="font-size:12px;">Add your first user using the button above.</div>
+  </td></tr>`;
+}
+
+async function addUser(){
+  const fn=document.getElementById('f_fn').value.trim(), ln=document.getElementById('f_ln').value.trim();
+  const role=document.getElementById('f_role').value, pw=document.getElementById('f_pw').value.trim();
+  if(!fn||!ln||!role||!pw){showToast('⚠️ Please fill all required fields','#FEF3C7','#92400E');return;}
+  const r=await fetch('users.php?action=create',{
+    method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      name:fn+' '+ln,
+      username:document.getElementById('f_un').value.trim()||fn.toLowerCase()+'.'+ln.toLowerCase(),
+      email:document.getElementById('f_em').value.trim(),
+      password:pw, role,
+      department:document.getElementById('f_dept').value.trim()
+    })
+  });
+  const j=await r.json();
+  if(j.success){document.getElementById('addModal').classList.remove('show');renderUsers();showToast('✅ User created','#D1FAE5','#065F46');}
+  else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+
+let editId=null;
+function openEdit(id,name,email,role,dept,status){
+  editId=id;
+  document.getElementById('e_name').value=name;
+  document.getElementById('e_email').value=email;
+  document.getElementById('e_role').value=role;
+  document.getElementById('e_dept').value=dept;
+  document.getElementById('e_status').value=status;
+  document.getElementById('editModal').classList.add('show');
+}
+async function saveEdit(){
+  const r=await fetch('users.php?action=update',{
+    method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id:editId,name:document.getElementById('e_name').value,email:document.getElementById('e_email').value,role:document.getElementById('e_role').value,department:document.getElementById('e_dept').value,status:document.getElementById('e_status').value})
+  });
+  const j=await r.json();
+  document.getElementById('editModal').classList.remove('show');
+  if(j.success){renderUsers();showToast('✅ User updated','#D1FAE5','#065F46');}
+  else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+async function delUser(id){
+  if(!confirm('Delete this user?'))return;
+  const r=await fetch('users.php?action=delete',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const j=await r.json();
+  if(j.success){renderUsers();showToast('🗑️ User removed','#FEF2F2','#991B1B');}
+  else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
+
+// ── Registration Form ─────────────────────────────────────────
+let courseOptions='<option value="">Select course…</option>';
+let rowCount=0;
+
+async function loadCoursesForReg(){
+  const r=await fetch('courses.php?action=list&status=Active',{credentials:'include'});
+  const j=await r.json();
+  if(j.success) courseOptions='<option value="">Select course…</option>'+j.data.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+const LEVELS=['Beginner','Intermediate','Advanced','Professional'];
+
+function addCourseRow(){
+  rowCount++;
+  const rid='cr_'+rowCount;
+  const container=document.getElementById('courseRows');
+  const empty=container.querySelector('.empty-msg');if(empty)empty.remove();
+  const row=document.createElement('div'); row.className='ct-row'; row.id=rid;
+  row.innerHTML=`
+    <div class="ct-td"><select class="cr-course">${courseOptions}</select></div>
+    <div class="ct-td"><select><option value="">Level…</option>${LEVELS.map(l=>`<option>${l}</option>`).join('')}</select></div>
+    <div class="ct-td"><select><option value="Offline">Offline</option><option value="Online">Online</option><option value="Hybrid">Hybrid</option></select></div>
+    <div class="ct-td"><input type="date" style="font-size:12.5px;color:var(--text2);"></div>
+    <div class="ct-td" style="justify-content:center;"><button class="del-row-btn" onclick="removeRow('${rid}')">✕</button></div>`;
+  container.appendChild(row);
+}
+function removeRow(id){
+  const el=document.getElementById(id);if(el)el.remove();
+  if(!document.querySelector('.ct-row'))
+    document.getElementById('courseRows').innerHTML='<div class="empty-msg">No courses added. Click "+ Add new record" to begin.</div>';
+}
+
+async function submitReg(){
+  const fn=document.getElementById('r_fn').value.trim(), ln=document.getElementById('r_ln').value.trim();
+  const email=document.getElementById('r_email').value.trim();
+  if(!fn||!ln){showToast('⚠️ First and Last name required','#FEF3C7','#92400E');return;}
+  if(!email)  {showToast('⚠️ Email required','#FEF3C7','#92400E');return;}
+  const courseRows=document.querySelectorAll('.ct-row');
+  if(!courseRows.length){showToast('⚠️ Add at least one course','#FEF3C7','#92400E');return;}
+  const courses=[];
+  courseRows.forEach(row=>{
+    const sels=row.querySelectorAll('select');
+    const inp =row.querySelector('input[type=date]');
+    if(sels[0].value) courses.push({course_id:sels[0].value,mode:sels[2].value||'Offline',start_date:inp?.value||null});
+  });
+  const body={
+    first_name:fn, last_name:ln, email,
+    phone:document.getElementById('r_phone')?.value||'',
+    dob:document.getElementById('r_dob')?.value||'',
+    gender:document.getElementById('r_gender')?.value||'',
+    nationality:document.getElementById('r_nationality')?.value||'',
+    id_number:document.getElementById('r_idnum')?.value||'',
+    qualification:document.getElementById('r_qual')?.value||'',
+    address_line1:document.getElementById('r_addr1')?.value||'',
+    address_line2:document.getElementById('r_addr2')?.value||'',
+    city:document.getElementById('r_city')?.value||'',
+    state:document.getElementById('r_state')?.value||'',
+    pincode:document.getElementById('r_pin')?.value||'',
+    notes:document.getElementById('r_notes')?.value||'',
+    courses
+  };
+  const r=await fetch('students.php?action=create',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json();
+  if(j.success) showToast('✅ Student registered successfully!','#D1FAE5','#065F46');
+  else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg,bg,color){
+  const old=document.querySelector('.toast');if(old)old.remove();
+  const t=document.createElement('div');t.className='toast';
+  t.style.cssText=`background:${bg||'#1E1B4B'};color:${color||'#fff'};border:1.5px solid ${(color||'#fff')}44;`;
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},4000);
+}
+
+// ── Init ─────────────────────────────────────────────────────
+(async()=>{
+  const r=await fetch('auth.php?action=me',{credentials:'include'});
+  const j=await r.json();
+  if(!j.success){location.href='login.html';return;}
+  if(j.data.role!=='Admin'){location.href='user-dashboard.html';return;}
+  await loadCoursesForReg();
+  renderUsers();
+})();
+</script>
+</body>
+</html>

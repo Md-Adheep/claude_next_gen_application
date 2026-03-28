@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Registration · NextGen Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7C3AED;--purple-lt:#8B5CF6;--purple-bg:#F5F3FF;--purple-soft:#EDE9FE;--teal:#06B6D4;--teal-bg:#ECFEFF;--orange:#F97316;--orange-bg:#FFF7ED;--green:#10B981;--green-bg:#ECFDF5;--red:#EF4444;--bg:#F4F0FB;--white:#FFFFFF;--text:#1E1B4B;--text2:#6B7280;--text3:#9CA3AF;--border:#F3F4F6;--sidebar-w:230px;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;overflow:hidden;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);display:flex;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:10px;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--white);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;box-shadow:4px 0 20px rgba(124,58,237,.07);}
+.sb-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--purple-lt));display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;}
+.sb-logo h2{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--purple);}
+.sb-nav{padding:12px 10px;flex:1;}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:10px 11px 4px;font-weight:700;}
+.sb-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .16s;text-decoration:none;margin-bottom:2px;position:relative;}
+.sb-link:hover{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--purple);}
+.s-icon{font-size:15px;width:18px;text-align:center;}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;}
+.sb-badge.green{background:var(--green);}
+.sidebar-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.user-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.user-info-text h4{font-size:13px;font-weight:700;}.user-info-text p{font-size:11px;color:var(--text3);}
+.logout-btn{margin-left:auto;background:none;border:none;font-size:17px;cursor:pointer;color:var(--text3);transition:color .2s;}.logout-btn:hover{color:var(--red);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:62px;flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 26px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(124,58,237,.05);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-icon-btn{width:36px;height:36px;border-radius:10px;background:#F9FAFB;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .18s;position:relative;}
+.tb-icon-btn:hover{border-color:var(--purple-lt);background:var(--purple-bg);}
+.tb-notif{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid #fff;}
+.tb-profile{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 5px;background:#F9FAFB;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;}
+.tb-av{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+.tb-info span{display:block;font-size:12.5px;font-weight:700;line-height:1.2;}.tb-info small{font-size:11px;color:var(--text3);}
+.page{flex:1;overflow-y:auto;padding:24px 28px;}
+.page-header{margin-bottom:22px;}
+.page-header h2{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px;}
+.page-header p{font-size:13px;color:var(--text3);}
+
+/* Tabs */
+.tab-bar{display:flex;background:var(--white);border-radius:0;border-bottom:1.5px solid var(--border);margin-bottom:0;gap:0;}
+.tab-btn{padding:14px 24px;border:none;font-family:'Nunito',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;color:var(--text3);background:transparent;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .18s;}
+.tab-btn.active{color:var(--purple);border-bottom-color:var(--purple);}
+.tab-btn:not(.active):hover{color:var(--text);background:var(--purple-bg);}
+.tab-wrap{background:var(--white);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.04);overflow:hidden;margin-bottom:20px;}
+.tab-pane{display:none;padding:26px 28px;}.tab-pane.active{display:block;}
+
+.form-section-title{font-size:12px;font-weight:800;color:var(--purple);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 14px;padding-bottom:7px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:8px;}
+.fg{margin-bottom:0;}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.fg input,.fg select,.fg textarea{width:100%;background:#F9FAFB;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Nunito',sans-serif;font-size:13.5px;color:var(--text);outline:none;transition:border-color .2s;resize:vertical;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--purple-lt);background:#fff;box-shadow:0 0 0 3px rgba(124,58,237,.07);}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--text3);}
+.fg-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.fg-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.fg-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.full{grid-column:1/-1;}
+.btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:24px;padding-top:20px;border-top:1.5px solid var(--border);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 22px;border-radius:10px;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;transition:all .18s;}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-lt));color:#fff;box-shadow:0 4px 14px rgba(124,58,237,.25);}.btn-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-outline{background:#F9FAFB;border:1.5px solid var(--border);color:var(--text2);}.btn-outline:hover{border-color:var(--purple-lt);color:var(--purple);}
+.btn-danger-soft{background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.2);color:var(--red);}.btn-danger-soft:hover{background:rgba(239,68,68,.15);}
+
+/* Course table */
+.ct-table{width:100%;border-collapse:collapse;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;}
+.ct-table th{background:#FAFAFA;padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);text-align:left;border-bottom:1.5px solid var(--border);}
+.ct-table td{padding:8px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.ct-table tr:last-child td{border-bottom:none;}
+.ct-table select,.ct-table input[type=date]{background:#F9FAFB;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;width:100%;}
+.ct-table select:focus,.ct-table input[type=date]:focus{border-color:var(--purple-lt);}
+.del-row-btn{background:rgba(239,68,68,.1);border:none;border-radius:6px;padding:5px 10px;color:var(--red);cursor:pointer;font-size:12px;font-weight:700;transition:background .18s;}.del-row-btn:hover{background:rgba(239,68,68,.2);}
+.add-row-btn{background:var(--purple-bg);border:1.5px dashed var(--purple-lt);border-radius:8px;padding:9px 16px;color:var(--purple);cursor:pointer;font-family:'Nunito',sans-serif;font-size:12.5px;font-weight:700;margin-top:10px;transition:all .18s;}.add-row-btn:hover{background:var(--purple);color:#fff;}
+.empty-row{text-align:center;padding:16px;font-size:13px;color:var(--text3);}
+
+/* Submissions list */
+.sub-card{background:#FAFAFA;border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;transition:border-color .18s;}
+.sub-card:hover{border-color:var(--purple-lt);}
+.sub-name{font-weight:800;font-size:14px;margin-bottom:3px;}
+.sub-meta{font-size:12px;color:var(--text3);}
+.sub-badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.sub-pending{background:rgba(249,115,22,.1);color:var(--orange);}
+.sub-approved{background:rgba(16,185,129,.1);color:var(--green);}
+
+.fu{opacity:0;transform:translateY(14px);animation:fu .42s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes fu{to{opacity:1;transform:none;}}
+.d1{animation-delay:.04s}.d2{animation-delay:.09s}.d3{animation-delay:.14s}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎓</div>
+    <h2>NextGen Tech</h2>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">MAIN</div>
+    <a class="sb-link" href="dashboard.html"><span class="s-icon">📊</span>Dashboard</a>
+    <div class="sb-label">MANAGEMENT</div>
+    <a class="sb-link" href="users.html"><span class="s-icon">👥</span>User Management</a>
+    <a class="sb-link" href="students.html"><span class="s-icon">🎓</span>Students<span class="sb-badge">5</span></a>
+    <a class="sb-link active" href="student-registration.html"><span class="s-icon">📋</span>Registration</a>
+    <div class="sb-label">TRAINING</div>
+    <a class="sb-link" href="courses.html"><span class="s-icon">📚</span>Courses</a>
+    <a class="sb-link" href="certificates.html"><span class="s-icon">📜</span>Certificates<span class="sb-badge green">3</span></a>
+    <div class="sb-label">SYSTEM</div>
+    <a class="sb-link" href="#"><span class="s-icon">📢</span>Notices</a>
+    <a class="sb-link" href="#"><span class="s-icon">⚙️</span>Settings</a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-av">AD</div>
+    <div class="user-info-text"><h4>Admin User</h4><p>Administrator</p></div>
+    <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div style="font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;">Student Registration</div>
+      <div style="font-size:11.5px;color:var(--text3);">Portal <span style="color:var(--purple);">/ Registration</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="tb-icon-btn">🔔<div class="tb-notif"></div></div>
+      <div class="tb-icon-btn">⚙️</div>
+      <div class="tb-profile">
+        <div class="tb-av">AD</div>
+        <div class="tb-info"><span>Admin User</span><small>Administrator</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header fu">
+      <h2>📋 Student Registration</h2>
+      <p>Register new students and manage pending submissions from trainers</p>
+    </div>
+
+    <div class="tab-wrap fu d2">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(this,'new')">New Registration</button>
+        <button class="tab-btn" onclick="switchTab(this,'pending')">Pending Submissions <span style="background:var(--orange);color:#fff;border-radius:20px;padding:1px 8px;font-size:10px;margin-left:4px;">3</span></button>
+        <button class="tab-btn" onclick="switchTab(this,'optional')">Optional Information</button>
+      </div>
+
+      <!-- New Registration Tab -->
+      <div id="tab-new" class="tab-pane active">
+
+        <div class="form-section-title">👤 Personal Information</div>
+        <div class="fg-grid-2">
+          <div class="fg"><label>First Name *</label><input type="text" id="f_fn" placeholder="First name"></div>
+          <div class="fg"><label>Last Name *</label><input type="text" id="f_ln" placeholder="Last name"></div>
+        </div>
+        <div class="fg-grid-3">
+          <div class="fg"><label>Email Address *</label><input type="email" id="f_em" placeholder="student@email.com"></div>
+          <div class="fg"><label>Phone Number</label><input type="tel" id="f_ph" placeholder="+91 XXXXX XXXXX"></div>
+          <div class="fg"><label>Date of Birth</label><input type="date" id="f_dob"></div>
+        </div>
+        <div class="fg-grid-3">
+          <div class="fg"><label>Gender</label>
+            <select id="f_gen"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
+          </div>
+          <div class="fg"><label>Nationality</label><input type="text" id="f_nat" placeholder="e.g. Indian"></div>
+          <div class="fg"><label>Aadhar / ID Number</label><input type="text" id="f_id" placeholder="ID number"></div>
+        </div>
+
+        <div class="form-section-title">🎓 Course Enrollment</div>
+        <div style="overflow-x:auto;margin-bottom:6px;">
+          <table class="ct-table">
+            <thead><tr><th style="width:35%;">Course</th><th style="width:20%;">Level</th><th style="width:20%;">Mode</th><th style="width:18%;">Start Date</th><th style="width:7%;text-align:center;">✕</th></tr></thead>
+            <tbody id="courseRows"><tr><td colspan="5" class="empty-row">No courses added. Click "+ Add Course" to begin.</td></tr></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addCourseRow()">+ Add Course</button>
+
+        <div class="form-section-title">🏠 Address</div>
+        <div class="fg-grid-3">
+          <div class="fg"><label>City *</label><input type="text" id="f_city" placeholder="City"></div>
+          <div class="fg"><label>State</label><input type="text" id="f_state" placeholder="State"></div>
+          <div class="fg"><label>Pincode</label><input type="text" id="f_pin" placeholder="000000"></div>
+        </div>
+        <div class="fg-grid-2" style="margin-top:16px;">
+          <div class="fg"><label>Address Line 1</label><input type="text" id="f_a1" placeholder="Door No, Street"></div>
+          <div class="fg"><label>Address Line 2</label><input type="text" id="f_a2" placeholder="Locality, Landmark"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-outline" onclick="clearForm()">🔄 Clear</button>
+          <button class="btn btn-danger-soft" onclick="saveDraft()">💾 Save Draft</button>
+          <button class="btn btn-primary" onclick="submitForm()">✅ Register Student</button>
+        </div>
+      </div>
+
+      <!-- Pending Submissions Tab -->
+      <div id="tab-pending" class="tab-pane">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:18px;">Registrations submitted by trainers awaiting admin approval.</p>
+        <div id="pendingList"></div>
+      </div>
+
+      <!-- Optional Info Tab -->
+      <div id="tab-optional" class="tab-pane">
+        <div class="form-section-title">🎓 Academic Background</div>
+        <div class="fg-grid-3">
+          <div class="fg"><label>Highest Qualification</label><input type="text" placeholder="B.Tech, MCA, BSc..."></div>
+          <div class="fg"><label>University / College</label><input type="text" placeholder="Institution name"></div>
+          <div class="fg"><label>Year of Passing</label><input type="number" placeholder="2023"></div>
+        </div>
+        <div class="fg-grid-2" style="margin-top:16px;">
+          <div class="fg"><label>Specialization</label><input type="text" placeholder="Computer Science, IT..."></div>
+          <div class="fg"><label>Percentage / CGPA</label><input type="text" placeholder="85% / 8.5 CGPA"></div>
+        </div>
+
+        <div class="form-section-title">💼 Professional Background</div>
+        <div class="fg-grid-3">
+          <div class="fg"><label>Current Occupation</label><select><option value="">Select</option><option>Student</option><option>Fresher</option><option>Working Professional</option><option>Business</option></select></div>
+          <div class="fg"><label>Company Name</label><input type="text" placeholder="If employed"></div>
+          <div class="fg"><label>Years of Experience</label><input type="number" placeholder="0"></div>
+        </div>
+
+        <div class="form-section-title">🖥️ Technical Skills</div>
+        <div class="fg-grid-2">
+          <div class="fg"><label>Known Languages / Tools</label><input type="text" placeholder="Python, JavaScript, SQL..."></div>
+          <div class="fg"><label>Prior Training / Certifications</label><input type="text" placeholder="Any previous certifications"></div>
+        </div>
+
+        <div class="form-section-title">📝 Additional</div>
+        <div class="fg" style="margin-bottom:16px;"><label>How did you hear about us?</label>
+          <select><option value="">Select</option><option>Social Media</option><option>Friend / Referral</option><option>Google Search</option><option>College Placement</option><option>Walk-in</option></select>
+        </div>
+        <div class="fg"><label>Special Requirements / Notes</label><textarea rows="3" placeholder="Any accessibility needs or additional information..."></textarea></div>
+
+        <div class="btn-row">
+          <button class="btn btn-outline">🔄 Clear</button>
+          <button class="btn btn-primary" onclick="showToast('✅ Optional info saved!','#D1FAE5','#065F46')">💾 Save Optional Info</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function logout(){fetch('/auth.php?action=logout',{credentials:'include'}).finally(()=>{sessionStorage.clear();location.href='login.html';});}
+
+function switchTab(btn,name){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='pending')loadPending();
+}
+
+// Course rows ──────────────────────────────────────────────────
+let courseOptions='<option value="">Select course…</option>';
+const LEVELS=['Beginner','Intermediate','Advanced','Professional'];
+const MODES=['Online','Offline','Hybrid'];
+let rowCount=0;
+
+async function loadCoursesForTable(){
+  const r=await fetch('/courses.php?action=list&status=Active',{credentials:'include'});
+  const j=await r.json();
+  if(j.success) courseOptions='<option value="">Select course…</option>'+j.data.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+function addCourseRow(){
+  rowCount++;
+  const rid='cr_'+rowCount;
+  const tbody=document.getElementById('courseRows');
+  const empty=tbody.querySelector('.empty-row');if(empty)empty.closest('tr')?.remove();
+  const tr=document.createElement('tr'); tr.id=rid;
+  tr.innerHTML=`<td><select class="cr-course">${courseOptions}</select></td>
+    <td><select class="cr-level"><option value="">Level…</option>${LEVELS.map(l=>`<option>${l}</option>`).join('')}</select></td>
+    <td><select class="cr-mode">${MODES.map(m=>`<option>${m}</option>`).join('')}</select></td>
+    <td><input type="date" class="cr-date"></td>
+    <td style="text-align:center;"><button class="del-row-btn" onclick="removeRow('${rid}')">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+function removeRow(id){
+  const el=document.getElementById(id);if(el)el.remove();
+  if(!document.querySelector('#courseRows tr[id]'))
+    document.getElementById('courseRows').innerHTML='<tr><td colspan="5" class="empty-row">No courses added. Click "+ Add Course" to begin.</td></tr>';
+}
+
+async function submitForm(){
+  const fn=document.getElementById('f_fn').value.trim(), ln=document.getElementById('f_ln').value.trim();
+  const em=document.getElementById('f_em').value.trim();
+  if(!fn||!ln){showToast('⚠️ First and Last name required','#FEF3C7','#92400E');return;}
+  if(!em)     {showToast('⚠️ Email required','#FEF3C7','#92400E');return;}
+  const courseRows=document.querySelectorAll('#courseRows tr[id]');
+  if(!courseRows.length){showToast('⚠️ Add at least one course','#FEF3C7','#92400E');return;}
+  const courses=[];
+  courseRows.forEach(tr=>{
+    const cid=tr.querySelector('.cr-course')?.value;
+    const mode=tr.querySelector('.cr-mode')?.value||'Offline';
+    const date=tr.querySelector('.cr-date')?.value||null;
+    if(cid) courses.push({course_id:cid, mode, start_date:date});
+  });
+  const body={
+    first_name:fn, last_name:ln, email:em,
+    phone:       document.getElementById('f_ph')?.value||'',
+    dob:         document.getElementById('f_dob')?.value||'',
+    gender:      document.getElementById('f_gen')?.value||'',
+    nationality: document.getElementById('f_nat')?.value||'',
+    id_number:   document.getElementById('f_id')?.value||'',
+    city:        document.getElementById('f_city')?.value||'',
+    state:       document.getElementById('f_state')?.value||'',
+    pincode:     document.getElementById('f_pin')?.value||'',
+    address_line1:document.getElementById('f_a1')?.value||'',
+    address_line2:document.getElementById('f_a2')?.value||'',
+    courses
+  };
+  const r=await fetch('/students.php?action=create',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json();
+  if(j.success){showToast('✅ Student registered!','#D1FAE5','#065F46');clearForm();loadPending();}
+  else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+function saveDraft(){showToast('💾 Draft saved!','#EDE9FE','#7C3AED');}
+function clearForm(){
+  ['f_fn','f_ln','f_em','f_ph','f_dob','f_nat','f_id','f_city','f_state','f_pin','f_a1','f_a2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const g=document.getElementById('f_gen');if(g)g.value='';
+  document.getElementById('courseRows').innerHTML='<tr><td colspan="5" class="empty-row">No courses added. Click "+ Add Course" to begin.</td></tr>';
+  rowCount=0;
+}
+
+// Pending submissions ──────────────────────────────────────────
+async function loadPending(){
+  const r=await fetch('/students.php?action=list&status=Pending',{credentials:'include'});
+  const j=await r.json();
+  const el=document.getElementById('pendingList');
+  if(!j.success||!j.data.length){
+    el.innerHTML='<p style="text-align:center;color:var(--text3);padding:40px;">No pending submissions</p>';return;
+  }
+  el.innerHTML=j.data.map(s=>`
+  <div class="sub-card">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;">${s.first_name[0]}${s.last_name[0]}</div>
+      <div><div class="sub-name">${s.name}</div><div class="sub-meta">${s.email} · ${new Date(s.registered_at).toLocaleDateString('en-IN')}</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="sub-badge sub-pending">Pending</span>
+      <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="approveSub(${s.id})">✅ Approve</button>
+      <button class="btn btn-danger" style="padding:6px 14px;font-size:12px;" onclick="rejectSub(${s.id})">✕ Reject</button>
+    </div>
+  </div>`).join('');
+}
+async function approveSub(id){
+  const r=await fetch('/students.php?action=approve',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const j=await r.json();
+  if(j.success){loadPending();showToast('✅ Student approved!','#D1FAE5','#065F46');}
+  else showToast('❌ '+j.message,'#FEF2F2','#991B1B');
+}
+async function rejectSub(id){
+  if(!confirm('Reject this student?'))return;
+  const r=await fetch('/students.php?action=reject',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const j=await r.json();
+  if(j.success){loadPending();showToast('Student rejected','#FEF2F2','#991B1B');}
+}
+
+function showToast(msg,bg,color){
+  const old=document.querySelector('.ng-toast');if(old)old.remove();
+  const t=document.createElement('div');t.className='ng-toast';
+  t.style.cssText=`position:fixed;bottom:24px;right:24px;background:${bg};color:${color};border:1.5px solid ${color}44;border-radius:12px;padding:13px 20px;font-size:13px;font-weight:700;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.15);`;
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},4000);
+}
+
+// ── Init ──────────────────────────────────────────────────────
+(async()=>{
+  const r=await fetch('/auth.php?action=me',{credentials:'include'});
+  const j=await r.json();
+  if(!j.success){location.href='login.html';return;}
+  if(j.data.role!=='Admin'){location.href='user-dashboard.html';return;}
+  await loadCoursesForTable();
+  loadPending();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# Sensitive files — never commit these
+.env
+deploy.log
+
+# Composer dependencies (install on server separately if needed)
+vendor/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Students · NextGen Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Variables ──────────────────────────────────────── */
+:root{
+  --purple:#7C3AED;--purple-lt:#8B5CF6;--purple-bg:#F5F3FF;--purple-soft:#EDE9FE;
+  --teal:#06B6D4;--teal-bg:#ECFEFF;
+  --orange:#F97316;--orange-bg:#FFF7ED;
+  --green:#10B981;--green-bg:#ECFDF5;
+  --red:#EF4444;--red-bg:#FEF2F2;
+  --gold:#F59E0B;--gold-bg:#FFFBEB;
+  --blue:#3B82F6;--blue-bg:#EFF6FF;
+  --bg:#F4F0FB;--white:#FFFFFF;
+  --text:#1E1B4B;--text2:#6B7280;--text3:#9CA3AF;
+  --border:#E5E7EB;--border-lt:#F3F4F6;
+  --shadow:0 2px 10px rgba(0,0,0,0.05);
+  --sidebar-w:230px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);display:flex;}
+a{text-decoration:none;color:inherit;}
+button{cursor:pointer;font-family:inherit;}
+input,select,textarea{font-family:inherit;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:10px;}
+
+/* ── Sidebar ────────────────────────────────────────── */
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--white);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;box-shadow:4px 0 20px rgba(124,58,237,0.07);overflow-y:auto;}
+.sb-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-lt);flex-shrink:0;}
+.sb-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--purple-lt));display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;box-shadow:0 4px 12px rgba(124,58,237,0.3);}
+.sb-logo h2{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;color:var(--purple);}
+.sb-nav{padding:12px 10px;flex:1;}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:10px 11px 4px;font-weight:700;}
+.sb-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .16s;text-decoration:none;margin-bottom:2px;position:relative;}
+.sb-link:hover{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--purple);}
+.s-icon{font-size:15px;width:18px;text-align:center;}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;}
+.sb-badge.green{background:var(--green);}
+.sidebar-user{padding:14px 16px;border-top:1px solid var(--border-lt);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.user-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.user-info-text h4{font-size:13px;font-weight:700;}.user-info-text p{font-size:11px;color:var(--text3);}
+.logout-btn{margin-left:auto;background:none;border:none;font-size:17px;cursor:pointer;color:var(--text3);transition:color .2s;}.logout-btn:hover{color:var(--red);}
+
+/* ── Main ───────────────────────────────────────────── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+
+/* ── Topbar ─────────────────────────────────────────── */
+.topbar{height:62px;flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border-lt);padding:0 26px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(124,58,237,0.05);}
+.search-bar{flex:1;max-width:360px;position:relative;}
+.search-bar input{width:100%;background:#F9FAFB;border:1.5px solid var(--border-lt);border-radius:12px;padding:9px 14px 9px 38px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.search-bar input:focus{border-color:var(--purple-lt);}
+.search-bar input::placeholder{color:var(--text3);}
+.search-bar svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);width:14px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-icon-btn{width:36px;height:36px;border-radius:10px;background:#F9FAFB;border:1.5px solid var(--border-lt);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .18s;position:relative;}
+.tb-icon-btn:hover{border-color:var(--purple-lt);background:var(--purple-bg);}
+.tb-notif{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid #fff;}
+.tb-profile{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 5px;background:#F9FAFB;border:1.5px solid var(--border-lt);border-radius:12px;cursor:pointer;transition:border-color .18s;}
+.tb-profile:hover{border-color:var(--purple-lt);}
+.tb-av{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+.tb-info span{display:block;font-size:12.5px;font-weight:700;line-height:1.2;}.tb-info small{font-size:11px;color:var(--text3);}
+
+/* ── Page ───────────────────────────────────────────── */
+.page{flex:1;overflow-y:auto;padding:24px 26px;}
+
+/* ── Page header ────────────────────────────────────── */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+.page-header h2{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;margin-bottom:3px;}
+.page-header p{font-size:13px;color:var(--text3);}
+
+/* ── Stat cards ─────────────────────────────────────── */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:var(--white);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(124,58,237,0.1);}
+.sc-icon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.sc-val{font-family:'Poppins',sans-serif;font-size:24px;font-weight:700;line-height:1;margin-bottom:3px;}
+.sc-label{font-size:12px;font-weight:600;color:var(--text3);}
+
+/* ── Tabs ───────────────────────────────────────────── */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.tab-btn{background:none;border:none;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--text3);padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .18s;border-radius:8px 8px 0 0;}
+.tab-btn:hover{color:var(--text2);background:var(--border-lt);}
+.tab-btn.active{color:var(--purple);border-bottom-color:var(--purple);}
+
+/* ── Filter bar ─────────────────────────────────────── */
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.fb-search{flex:1;min-width:200px;position:relative;}
+.fb-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);width:14px;}
+.fb-search input{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:9px 14px 9px 36px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.fb-search input:focus{border-color:var(--purple-lt);}
+.fb-search input::placeholder{color:var(--text3);}
+.fb-sel{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:9px 14px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text2);outline:none;cursor:pointer;transition:border-color .2s;}
+.fb-sel:focus{border-color:var(--purple-lt);}
+
+/* ── Card ───────────────────────────────────────────── */
+.card{background:var(--white);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;}
+.card-head{padding:16px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-lt);}
+.card-head h3{font-family:'Poppins',sans-serif;font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.card-head-right{display:flex;align-items:center;gap:10px;}
+.student-count{font-size:12px;color:var(--text3);font-weight:600;}
+
+/* ── Table ──────────────────────────────────────────── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);background:#FAFAFA;text-align:left;white-space:nowrap;}
+thead th:first-child{border-radius:0;}
+tbody td{padding:13px 16px;font-size:13px;font-weight:600;border-bottom:1px solid var(--border-lt);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr{transition:background .15s;}
+tbody tr:hover td{background:#FAFBFF;}
+
+/* Student cell */
+.stu-cell{display:flex;align-items:center;gap:10px;}
+.avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;}
+.stu-name{font-size:13.5px;font-weight:700;margin-bottom:2px;}
+.stu-id{font-size:11px;color:var(--text3);}
+
+/* ── Badges ─────────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+.badge-success{background:rgba(16,185,129,.1);color:var(--green);}
+.badge-warning{background:rgba(245,158,11,.1);color:var(--gold);}
+.badge-info{background:rgba(59,130,246,.1);color:var(--blue);}
+.badge-danger{background:rgba(239,68,68,.1);color:var(--red);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);}
+
+/* ── Progress ───────────────────────────────────────── */
+.prog-wrap{display:flex;align-items:center;gap:8px;}
+.prog-bar{flex:1;height:6px;background:#F3F4F6;border-radius:6px;overflow:hidden;min-width:60px;}
+.prog-fill{height:100%;border-radius:6px;transition:width .6s ease;}
+.prog-pct{font-size:11px;color:var(--text3);width:30px;text-align:right;font-weight:700;}
+
+/* ── Action buttons ─────────────────────────────────── */
+.actions{display:flex;gap:5px;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:9px;border:none;font-family:'Nunito',sans-serif;font-size:12.5px;font-weight:700;transition:all .18s;white-space:nowrap;cursor:pointer;}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-lt));color:#fff;box-shadow:0 4px 14px rgba(124,58,237,.2);}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-outline{background:#F9FAFB;border:1.5px solid var(--border);color:var(--text2);}
+.btn-outline:hover{border-color:var(--purple-lt);color:var(--purple);}
+.btn-success{background:rgba(16,185,129,.1);border:1.5px solid rgba(16,185,129,.2);color:var(--green);}
+.btn-success:hover{background:var(--green);color:#fff;}
+.btn-danger{background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.2);color:var(--red);}
+.btn-danger:hover{background:var(--red);color:#fff;}
+.btn-sm{padding:5px 10px;font-size:11.5px;border-radius:7px;}
+.btn-cancel{background:#F3F4F6;border:none;border-radius:9px;padding:10px 20px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);transition:background .18s;}
+.btn-cancel:hover{background:#E5E7EB;}
+.btn-save{background:linear-gradient(135deg,var(--purple),var(--purple-lt));border:none;border-radius:9px;padding:10px 22px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:#fff;transition:opacity .18s;}
+.btn-save:hover{opacity:.88;}
+
+/* ── Empty state ────────────────────────────────────── */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-state .e-icon{font-size:52px;margin-bottom:14px;}
+.empty-state h4{font-family:'Poppins',sans-serif;font-size:16px;font-weight:600;margin-bottom:6px;}
+.empty-state p{font-size:13px;color:var(--text3);}
+
+/* ── Modal ──────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(30,27,75,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;padding:20px;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border-radius:18px;width:600px;max-width:95vw;max-height:90vh;overflow-y:auto;transform:scale(.96) translateY(16px);transition:transform .3s cubic-bezier(.16,1,.3,1);}
+.modal-overlay.show .modal{transform:scale(1) translateY(0);}
+.modal-head{padding:20px 24px 16px;border-bottom:1px solid var(--border-lt);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1;}
+.modal-head h3{font-family:'Poppins',sans-serif;font-size:16px;font-weight:600;}
+.modal-close{width:28px;height:28px;background:#F3F4F6;border:none;border-radius:7px;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .18s;cursor:pointer;}
+.modal-close:hover{background:rgba(239,68,68,.1);color:var(--red);}
+.modal-body{padding:22px 24px;}
+.modal-foot{padding:16px 24px 20px;border-top:1px solid var(--border-lt);display:flex;justify-content:flex-end;gap:10px;}
+
+/* ── Form ───────────────────────────────────────────── */
+.fg-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fg{display:flex;flex-direction:column;gap:6px;}
+.fg.full{grid-column:1/-1;}
+.fg label{font-size:11.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;}
+.fg input,.fg select,.fg textarea{background:#F9FAFB;border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-family:'Nunito',sans-serif;font-size:13.5px;color:var(--text);outline:none;transition:border-color .2s;width:100%;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--purple-lt);background:var(--white);}
+.fg textarea{resize:vertical;min-height:70px;}
+
+/* ── View modal info cells ──────────────────────────── */
+.vm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.vm-cell{background:#F9FAFB;border-radius:10px;padding:13px 15px;}
+.vm-cell .lbl{font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.vm-cell .val{font-size:13.5px;font-weight:600;color:var(--text);}
+
+/* ── Profile top ────────────────────────────────────── */
+.profile-top{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border-lt);}
+.profile-av{width:58px;height:58px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;flex-shrink:0;}
+.profile-name{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;margin-bottom:2px;}
+.profile-id{font-size:13px;color:var(--text3);margin-bottom:6px;}
+
+/* ── Toast ──────────────────────────────────────────── */
+.toast{position:fixed;bottom:28px;right:28px;z-index:999;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:13px 20px;font-size:13px;font-weight:700;box-shadow:0 8px 28px rgba(0,0,0,0.12);display:flex;align-items:center;gap:10px;max-width:360px;animation:toastIn .3s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+/* ── Animations ─────────────────────────────────────── */
+.fu{opacity:0;transform:translateY(14px);animation:fu .42s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes fu{to{opacity:1;transform:none;}}
+.d1{animation-delay:.04s}.d2{animation-delay:.09s}.d3{animation-delay:.14s}.d4{animation-delay:.19s}.d5{animation-delay:.24s}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎓</div>
+    <h2>NextGen Tech</h2>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">MAIN</div>
+    <a class="sb-link" href="dashboard.html"><span class="s-icon">📊</span>Dashboard</a>
+    <div class="sb-label">MANAGEMENT</div>
+    <a class="sb-link" href="users.html"><span class="s-icon">👥</span>User Management</a>
+    <a class="sb-link active" href="students.html"><span class="s-icon">🎓</span>Students<span class="sb-badge" id="pendingBadge" style="display:none;">0</span></a>
+    <a class="sb-link" href="student-registration.html"><span class="s-icon">📋</span>Registration</a>
+    <div class="sb-label">TRAINING</div>
+    <a class="sb-link" href="courses.html"><span class="s-icon">📚</span>Courses</a>
+    <a class="sb-link" href="certificates.html"><span class="s-icon">📜</span>Certificates<span class="sb-badge green">3</span></a>
+    <div class="sb-label">SYSTEM</div>
+    <a class="sb-link" href="#"><span class="s-icon">📢</span>Notices</a>
+    <a class="sb-link" href="#"><span class="s-icon">⚙️</span>Settings</a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-av" id="sidebarAv">A</div>
+    <div class="user-info-text">
+      <h4 id="sidebarName">Admin</h4>
+      <p id="sidebarRole">Administrator</p>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Logout">🚪</button>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══════════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search students…" id="globalSearch" oninput="loadStudents()">
+    </div>
+    <div class="topbar-right">
+      <div class="tb-icon-btn">🔔<span class="tb-notif"></span></div>
+      <div class="tb-icon-btn">❓</div>
+      <div class="tb-profile">
+        <div class="tb-av" id="topbarAv">A</div>
+        <div class="tb-info">
+          <span id="topbarName">Admin</span>
+          <small id="topbarRole">Administrator</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page -->
+  <div class="page">
+
+    <!-- Header -->
+    <div class="page-header fu d1">
+      <div>
+        <h2>🎓 Student Management</h2>
+        <p>Approve enrollments and manage student profiles</p>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('addModal')">＋ Add Student</button>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stat-row fu d2">
+      <div class="stat-card">
+        <div class="sc-icon" style="background:var(--purple-bg);">👥</div>
+        <div><div class="sc-val" id="statTotal">—</div><div class="sc-label">Total Students</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon" style="background:var(--green-bg);">✅</div>
+        <div><div class="sc-val" style="color:var(--green);" id="statApproved">—</div><div class="sc-label">Approved</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon" style="background:var(--gold-bg);">⏳</div>
+        <div><div class="sc-val" style="color:var(--gold);" id="statPending">—</div><div class="sc-label">Pending</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon" style="background:var(--blue-bg);">🎓</div>
+        <div><div class="sc-val" style="color:var(--blue);" id="statCompleted">—</div><div class="sc-label">Completed</div></div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs fu d3">
+      <button class="tab-btn active" onclick="switchTab(this,'')">All Students</button>
+      <button class="tab-btn" onclick="switchTab(this,'Pending')">⏳ Pending</button>
+      <button class="tab-btn" onclick="switchTab(this,'Approved')">✅ Approved</button>
+      <button class="tab-btn" onclick="switchTab(this,'Completed')">🎓 Completed</button>
+      <button class="tab-btn" onclick="switchTab(this,'Rejected')">✕ Rejected</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar fu d4">
+      <div class="fb-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search by name, email…" id="searchInput" oninput="loadStudents()">
+      </div>
+      <select class="fb-sel" id="courseFilter" onchange="loadStudents()">
+        <option value="">All Courses</option>
+      </select>
+      <button class="btn btn-outline" onclick="approveAll()" style="font-size:12.5px;">✅ Approve All Pending</button>
+    </div>
+
+    <!-- Table card -->
+    <div class="card fu d5">
+      <div class="card-head">
+        <h3>🎓 Students</h3>
+        <div class="card-head-right">
+          <span class="student-count" id="studentCount">—</span>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Course(s)</th>
+              <th>Phone</th>
+              <th>Enrolled</th>
+              <th>Progress</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTbody">
+            <tr><td colspan="7"><div class="empty-state"><div class="e-icon">⏳</div><h4>Loading…</h4></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main -->
+
+<!-- ══ ADD STUDENT MODAL ═════════════════════════════════ -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>🎓 Add New Student</h3>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fg-grid">
+        <div class="fg">
+          <label>First Name *</label>
+          <input type="text" id="s_fname" placeholder="First name">
+        </div>
+        <div class="fg">
+          <label>Last Name *</label>
+          <input type="text" id="s_lname" placeholder="Last name">
+        </div>
+        <div class="fg">
+          <label>Email *</label>
+          <input type="email" id="s_email" placeholder="student@email.com">
+        </div>
+        <div class="fg">
+          <label>Phone</label>
+          <input type="tel" id="s_phone" placeholder="+91 XXXXX XXXXX">
+        </div>
+        <div class="fg">
+          <label>Course</label>
+          <select id="s_course">
+            <option value="">Select course…</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Qualification</label>
+          <input type="text" id="s_qual" placeholder="B.Tech, MCA, etc.">
+        </div>
+        <div class="fg">
+          <label>Date of Birth</label>
+          <input type="date" id="s_dob">
+        </div>
+        <div class="fg">
+          <label>City</label>
+          <input type="text" id="s_city" placeholder="City">
+        </div>
+        <div class="fg full">
+          <label>Address</label>
+          <textarea id="s_addr" placeholder="Full address…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn-save" onclick="addStudent()" id="addBtn">🎓 Enroll Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW STUDENT MODAL ════════════════════════════════ -->
+<div class="modal-overlay" id="viewModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="vm_title">Student Profile</h3>
+      <button class="modal-close" onclick="closeModal('viewModal')">✕</button>
+    </div>
+    <div class="modal-body" id="vm_body"></div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('viewModal')">Close</button>
+      <a href="certificates.html" class="btn btn-primary">📜 Issue Certificate</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Helpers ───────────────────────────────────────────
+const AVATAR_COLORS = ['#7C3AED','#06B6D4','#10B981','#F97316','#EF4444','#3B82F6','#8B5CF6','#F59E0B'];
+const getColor = str => AVATAR_COLORS[str.charCodeAt(0) % AVATAR_COLORS.length];
+
+const STATUS_BADGE = {
+  Pending:   'badge-warning',
+  Approved:  'badge-success',
+  Completed: 'badge-info',
+  Rejected:  'badge-danger'
+};
+
+let currentStatus = '';
+let allStudents   = [];
+
+// ── Auth ─────────────────────────────────────────────
+async function checkAuth(){
+  try{
+    const r = await fetch('/auth.php?action=me',{credentials:'include'});
+    const j = await r.json();
+    if(!j.success){ location.href='login.html'; return null; }
+    const u = j.data;
+    const ini = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('sidebarAv').textContent   = ini;
+    document.getElementById('sidebarName').textContent = u.name;
+    document.getElementById('sidebarRole').textContent = u.role;
+    document.getElementById('topbarAv').textContent    = ini;
+    document.getElementById('topbarName').textContent  = u.name;
+    document.getElementById('topbarRole').textContent  = u.role;
+    return u;
+  }catch(e){ location.href='login.html'; return null; }
+}
+
+async function logout(){
+  await fetch('/auth.php?action=logout',{credentials:'include'});
+  location.href='login.html';
+}
+
+// ── Load students ─────────────────────────────────────
+async function loadStudents(){
+  const search = (document.getElementById('searchInput')?.value || document.getElementById('globalSearch')?.value || '').trim();
+  const params = new URLSearchParams({action:'list'});
+  if(currentStatus) params.append('status', currentStatus);
+  if(search) params.append('search', search);
+
+  const tbody = document.getElementById('studentsTbody');
+  tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="e-icon">⏳</div><h4>Loading…</h4></div></td></tr>`;
+
+  try{
+    const r = await fetch('/students.php?'+params,{credentials:'include'});
+    const j = await r.json();
+    allStudents = j.success ? j.data : [];
+  }catch(e){ allStudents = []; }
+
+  // Update stat counts
+  try{
+    const ra = await fetch('/students.php?action=list',{credentials:'include'});
+    const ja = await ra.json();
+    if(ja.success){
+      const all = ja.data;
+      document.getElementById('statTotal').textContent     = all.length;
+      document.getElementById('statApproved').textContent  = all.filter(s=>s.status==='Approved').length;
+      document.getElementById('statPending').textContent   = all.filter(s=>s.status==='Pending').length;
+      document.getElementById('statCompleted').textContent = all.filter(s=>s.status==='Completed').length;
+      const pending = all.filter(s=>s.status==='Pending').length;
+      const badge = document.getElementById('pendingBadge');
+      badge.style.display = pending>0 ? '' : 'none';
+      badge.textContent = pending;
+    }
+  }catch(e){}
+
+  document.getElementById('studentCount').textContent = allStudents.length + ' student' + (allStudents.length!==1?'s':'');
+
+  if(!allStudents.length){
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">
+      <div class="e-icon">🎓</div>
+      <h4>No students found</h4>
+      <p>${currentStatus ? 'No '+currentStatus.toLowerCase()+' students.' : 'Register your first student using the button above.'}</p>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = allStudents.map(s => {
+    const prog   = Math.round(parseFloat(s.avg_progress)||0);
+    const pColor = prog===100 ? 'var(--green)' : prog>50 ? 'var(--purple)' : 'var(--gold)';
+    const ini    = ((s.first_name||'?')[0] + (s.last_name||'?')[0]).toUpperCase();
+    const color  = getColor(ini);
+    const date   = new Date(s.registered_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const badgeCls = STATUS_BADGE[s.status]||'badge-warning';
+    return `<tr>
+      <td><div class="stu-cell">
+        <div class="avatar" style="background:${color};">${ini}</div>
+        <div><div class="stu-name">${s.name||s.first_name+' '+s.last_name}</div>
+             <div class="stu-id">ID #${s.id}</div></div>
+      </div></td>
+      <td style="font-size:12.5px;color:var(--text2);max-width:160px;">${s.courses||'—'}</td>
+      <td style="font-size:12.5px;color:var(--text3);">${s.phone||'—'}</td>
+      <td style="font-size:12px;color:var(--text3);">${date}</td>
+      <td style="min-width:120px;">
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" style="width:${prog}%;background:${pColor};"></div></div>
+          <span class="prog-pct">${prog}%</span>
+        </div>
+      </td>
+      <td><span class="badge ${badgeCls}">${s.status}</span></td>
+      <td><div class="actions">
+        <button class="btn btn-outline btn-sm" onclick="viewStudent(${s.id})">👁️</button>
+        ${s.status==='Pending' ? `
+          <button class="btn btn-success btn-sm" onclick="changeStatus(${s.id},'approve')" title="Approve">✅</button>
+          <button class="btn btn-danger btn-sm"  onclick="changeStatus(${s.id},'reject')"  title="Reject">✕</button>` : ''}
+        ${s.status==='Approved' ? `
+          <button class="btn btn-outline btn-sm" onclick="changeStatus(${s.id},'complete')" title="Mark Complete">🎓</button>` : ''}
+        ${s.status==='Completed' ? `
+          <a href="certificates.html" class="btn btn-primary btn-sm">📜</a>` : ''}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Tab switch ────────────────────────────────────────
+function switchTab(el, status){
+  currentStatus = status;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  loadStudents();
+}
+
+// ── Change status ─────────────────────────────────────
+async function changeStatus(id, action){
+  if(action==='reject' && !confirm('Reject this student?')) return;
+  try{
+    const r = await fetch(`/students.php?action=${action}`,{
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id})
+    });
+    const j = await r.json();
+    if(j.success){ loadStudents(); showToast('✅ '+j.message); }
+    else showToast('❌ '+(j.message||'Action failed'));
+  }catch(e){ showToast('❌ Network error'); }
+}
+
+// ── Approve all pending ───────────────────────────────
+async function approveAll(){
+  try{
+    const r = await fetch('/students.php?action=list&status=Pending',{credentials:'include'});
+    const j = await r.json();
+    if(!j.success||!j.data.length){ showToast('⚠️ No pending students'); return; }
+    if(!confirm(`Approve all ${j.data.length} pending students?`)) return;
+    await Promise.all(j.data.map(s=>fetch('/students.php?action=approve',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s.id})})));
+    loadStudents(); showToast('✅ All pending students approved!');
+  }catch(e){ showToast('❌ Network error'); }
+}
+
+// ── View student ──────────────────────────────────────
+async function viewStudent(id){
+  try{
+    const r = await fetch(`/students.php?action=get&id=${id}`,{credentials:'include'});
+    const j = await r.json();
+    if(!j.success){ showToast('❌ '+j.message); return; }
+    const s = j.data;
+    const ini   = ((s.first_name||'?')[0]+(s.last_name||'?')[0]).toUpperCase();
+    const color = getColor(ini);
+    const date  = new Date(s.registered_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const courses = s.enrollments?.map(e=>e.course_name).join(', ')||'—';
+    const prog    = s.enrollments?.length ? Math.round(s.enrollments.reduce((a,e)=>a+parseInt(e.progress||0),0)/s.enrollments.length) : 0;
+    const badgeCls = STATUS_BADGE[s.status]||'badge-warning';
+    document.getElementById('vm_title').textContent = '🎓 '+s.name;
+    document.getElementById('vm_body').innerHTML = `
+      <div class="profile-top">
+        <div class="profile-av" style="background:${color};">${ini}</div>
+        <div>
+          <div class="profile-name">${s.name}</div>
+          <div class="profile-id">ID #${s.id}</div>
+          <span class="badge ${badgeCls}">${s.status}</span>
+        </div>
+      </div>
+      <div class="vm-grid">
+        ${[['📚 Course',courses],['📅 Registered',date],['📱 Phone',s.phone||'—'],['🏙️ City',s.city||'—'],['📧 Email',s.email],['🎓 Qualification',s.qualification||'—']]
+          .map(([k,v])=>`<div class="vm-cell"><div class="lbl">${k}</div><div class="val">${v}</div></div>`).join('')}
+      </div>
+      <div style="background:#F9FAFB;border-radius:10px;padding:14px 16px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:12px;color:var(--text3);font-weight:700;">Average Progress</span>
+          <span style="font-size:12px;font-weight:700;">${prog}%</span>
+        </div>
+        <div class="prog-bar" style="height:8px;"><div class="prog-fill" style="width:${prog}%;"></div></div>
+      </div>`;
+    openModal('viewModal');
+  }catch(e){ showToast('❌ Network error'); }
+}
+
+// ── Add student ───────────────────────────────────────
+async function addStudent(){
+  const fn = document.getElementById('s_fname').value.trim();
+  const ln = document.getElementById('s_lname').value.trim();
+  const em = document.getElementById('s_email').value.trim();
+  if(!fn||!ln){ showToast('⚠️ First and last name required'); return; }
+  if(!em){ showToast('⚠️ Email required'); return; }
+  const btn = document.getElementById('addBtn');
+  btn.textContent = 'Enrolling…'; btn.disabled = true;
+  try{
+    const r = await fetch('/students.php?action=create',{
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        first_name:fn, last_name:ln, email:em,
+        phone: document.getElementById('s_phone').value,
+        city:  document.getElementById('s_city').value,
+        qualification: document.getElementById('s_qual').value,
+        dob:   document.getElementById('s_dob').value,
+        address_line1: document.getElementById('s_addr').value,
+        courses: document.getElementById('s_course').value ? [{course_id:document.getElementById('s_course').value}] : []
+      })
+    });
+    const j = await r.json();
+    if(j.success){
+      closeModal('addModal');
+      loadStudents();
+      showToast('🎓 Student enrolled successfully!');
+      ['s_fname','s_lname','s_email','s_phone','s_city','s_qual','s_addr'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    } else showToast('❌ '+(j.message||'Enrollment failed'));
+  }catch(e){ showToast('❌ Network error: '+e.message); }
+  btn.textContent = '🎓 Enroll Student'; btn.disabled = false;
+}
+
+// ── Load courses for dropdowns ────────────────────────
+async function loadCourses(){
+  try{
+    const r = await fetch('/courses.php?action=list&status=Active',{credentials:'include'});
+    const j = await r.json();
+    if(!j.success) return;
+    const sel1 = document.getElementById('courseFilter');
+    const sel2 = document.getElementById('s_course');
+    j.data.forEach(c=>{
+      [sel1,sel2].forEach(s=>{
+        if(!s) return;
+        const o = document.createElement('option');
+        o.value = c.id; o.textContent = c.name;
+        s.appendChild(o);
+      });
+    });
+  }catch(e){}
+}
+
+// ── Modal helpers ─────────────────────────────────────
+function openModal(id){ document.getElementById(id)?.classList.add('show'); }
+function closeModal(id){ document.getElementById(id)?.classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('show'); });
+});
+
+// ── Toast ─────────────────────────────────────────────
+function showToast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t = document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); },3500);
+}
+
+// ── Init ──────────────────────────────────────────────
+(async()=>{
+  const user = await checkAuth();
+  if(!user) return;
+  await loadCourses();
+  loadStudents();
+})();
+</script>
+</body>
+</html>

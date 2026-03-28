@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance · NextGen Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7C3AED;--purple-lt:#8B5CF6;--purple-bg:#F5F3FF;--purple-soft:#EDE9FE;--teal:#06B6D4;--teal-bg:#ECFEFF;--orange:#F97316;--orange-bg:#FFF7ED;--green:#10B981;--green-bg:#ECFDF5;--red:#EF4444;--red-bg:#FEF2F2;--gold:#F59E0B;--gold-bg:#FFFBEB;--bg:#F4F0FB;--white:#FFFFFF;--text:#1E1B4B;--text2:#6B7280;--text3:#9CA3AF;--border:#E5E7EB;--border-lt:#F3F4F6;--sidebar-w:230px;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;overflow:hidden;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);display:flex;}
+a{text-decoration:none;color:inherit;}button{cursor:pointer;font-family:inherit;}input,select,textarea{font-family:inherit;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:10px;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--white);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;box-shadow:4px 0 20px rgba(124,58,237,0.07);overflow-y:auto;}
+.sb-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-lt);flex-shrink:0;}
+.sb-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--purple-lt));display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;}
+.sb-logo h2{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;color:var(--purple);}
+.sb-nav{padding:12px 10px;flex:1;}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:10px 11px 4px;font-weight:700;}
+.sb-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .16s;text-decoration:none;margin-bottom:2px;position:relative;}
+.sb-link:hover{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--purple);}
+.s-icon{font-size:15px;width:18px;text-align:center;}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;}
+.sb-badge.green{background:var(--green);}
+.sidebar-user{padding:14px 16px;border-top:1px solid var(--border-lt);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.user-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.user-info-text h4{font-size:13px;font-weight:700;}.user-info-text p{font-size:11px;color:var(--text3);}
+.logout-btn{margin-left:auto;background:none;border:none;font-size:17px;cursor:pointer;color:var(--text3);}.logout-btn:hover{color:var(--red);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:62px;flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border-lt);padding:0 26px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(124,58,237,0.05);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-icon-btn{width:36px;height:36px;border-radius:10px;background:#F9FAFB;border:1.5px solid var(--border-lt);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;position:relative;}
+.tb-notif{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid #fff;}
+.tb-profile{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 5px;background:#F9FAFB;border:1.5px solid var(--border-lt);border-radius:12px;cursor:pointer;}
+.tb-av{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+.tb-info span{display:block;font-size:12.5px;font-weight:700;line-height:1.2;}.tb-info small{font-size:11px;color:var(--text3);}
+.page{flex:1;overflow-y:auto;padding:24px 26px;}
+/* Controls */
+.ctrl-card{background:var(--white);border-radius:14px;padding:20px 22px;box-shadow:0 2px 10px rgba(0,0,0,.05);margin-bottom:18px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;}
+.ctrl-group{display:flex;flex-direction:column;gap:6px;}
+.ctrl-group label{font-size:11.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;}
+.ctrl-group select,.ctrl-group input[type=date]{background:#F9FAFB;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'Nunito',sans-serif;font-size:13.5px;color:var(--text);outline:none;transition:border-color .2s;min-width:180px;}
+.ctrl-group select:focus,.ctrl-group input[type=date]:focus{border-color:var(--purple-lt);}
+/* Stat cards */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.stat-card{background:var(--white);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(0,0,0,.04);transition:transform .2s;}
+.stat-card:hover{transform:translateY(-2px);}
+.sc-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sc-val{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;line-height:1;margin-bottom:2px;}
+.sc-label{font-size:11.5px;color:var(--text3);font-weight:600;}
+/* Attendance table card */
+.card{background:var(--white);border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.05);overflow:hidden;}
+.card-head{padding:16px 20px;border-bottom:1px solid var(--border-lt);display:flex;align-items:center;justify-content:space-between;}
+.card-head h3{font-family:'Poppins',sans-serif;font-size:14.5px;font-weight:600;}
+.card-head-right{display:flex;align-items:center;gap:10px;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);background:#FAFAFA;text-align:left;white-space:nowrap;}
+tbody td{padding:13px 16px;font-size:13px;font-weight:600;border-bottom:1px solid var(--border-lt);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:#FAFBFF;}
+/* Student cell */
+.stu-cell{display:flex;align-items:center;gap:10px;}
+.avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+/* Attendance toggle buttons */
+.att-toggle{display:flex;border-radius:8px;overflow:hidden;border:1.5px solid var(--border);}
+.att-btn{padding:6px 14px;border:none;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;background:#F9FAFB;color:var(--text3);}
+.att-btn.present{background:var(--green-bg);color:var(--green);border-right:1px solid var(--border);}
+.att-btn.absent{background:var(--red-bg);color:var(--red);border-right:1px solid var(--border);}
+.att-btn.late{background:var(--gold-bg);color:var(--gold);}
+.att-btn.active-p{background:var(--green)!important;color:#fff!important;}
+.att-btn.active-a{background:var(--red)!important;color:#fff!important;}
+.att-btn.active-l{background:var(--gold)!important;color:#fff!important;}
+/* Badges */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.b-present{background:var(--green-bg);color:var(--green);}
+.b-absent{background:var(--red-bg);color:var(--red);}
+.b-late{background:var(--gold-bg);color:var(--gold);}
+/* Btns */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;border:none;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;transition:all .18s;cursor:pointer;}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-lt));color:#fff;box-shadow:0 4px 14px rgba(124,58,237,.2);}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-outline{background:#F9FAFB;border:1.5px solid var(--border);color:var(--text2);}
+.btn-outline:hover{border-color:var(--purple-lt);color:var(--purple);}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:8px;}
+/* Progress bar */
+.prog-bar{height:6px;background:#F3F4F6;border-radius:6px;overflow:hidden;min-width:60px;}
+.prog-fill{height:100%;border-radius:6px;transition:width .5s ease;}
+/* Empty */
+.empty-state{text-align:center;padding:60px 20px;}
+.empty-state .e-icon{font-size:48px;margin-bottom:12px;}
+.empty-state h4{font-family:'Poppins',sans-serif;font-size:16px;font-weight:600;margin-bottom:5px;}
+.empty-state p{font-size:13px;color:var(--text3);}
+/* Page header */
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.page-hdr h2{font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;margin-bottom:3px;}
+.page-hdr p{font-size:13px;color:var(--text3);}
+/* Toast */
+.toast{position:fixed;bottom:28px;right:28px;z-index:999;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:13px 20px;font-size:13px;font-weight:700;box-shadow:0 8px 28px rgba(0,0,0,.12);max-width:360px;animation:tIn .3s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes tIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.fu{opacity:0;transform:translateY(14px);animation:fu .42s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes fu{to{opacity:1;transform:none;}}
+.d1{animation-delay:.04s}.d2{animation-delay:.09s}.d3{animation-delay:.14s}.d4{animation-delay:.19s}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎓</div>
+    <h2>NextGen Tech</h2>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">MAIN</div>
+    <a class="sb-link" href="dashboard.html"><span class="s-icon">📊</span>Dashboard</a>
+    <div class="sb-label">MANAGEMENT</div>
+    <a class="sb-link" href="users.html"><span class="s-icon">👥</span>User Management</a>
+    <a class="sb-link" href="students.html"><span class="s-icon">🎓</span>Students</a>
+    <a class="sb-link" href="student-registration.html"><span class="s-icon">📋</span>Registration</a>
+    <div class="sb-label">TRAINING</div>
+    <a class="sb-link" href="courses.html"><span class="s-icon">📚</span>Courses</a>
+    <a class="sb-link" href="certificates.html"><span class="s-icon">📜</span>Certificates</a>
+    <a class="sb-link active" href="attendance.html"><span class="s-icon">✅</span>Attendance</a>
+    <div class="sb-label">SYSTEM</div>
+    <a class="sb-link" href="notices.html"><span class="s-icon">📢</span>Notices</a>
+    <a class="sb-link" href="#"><span class="s-icon">⚙️</span>Settings</a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-av" id="sidebarAv">A</div>
+    <div class="user-info-text"><h4 id="sidebarName">Admin</h4><p id="sidebarRole">Administrator</p></div>
+    <button class="logout-btn" onclick="logout()">🚪</button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div style="font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;">✅ Attendance</div>
+      <div style="font-size:11.5px;color:var(--text3);">Portal <span style="color:var(--purple);">/ Attendance</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="tb-icon-btn">🔔<div class="tb-notif"></div></div>
+      <div class="tb-profile">
+        <div class="tb-av" id="topbarAv">A</div>
+        <div class="tb-info"><span id="topbarName">Admin</span><small id="topbarRole">Administrator</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <div class="page-hdr fu">
+      <div><h2>✅ Attendance Register</h2><p>Mark and track student attendance by course and training date</p></div>
+      <button class="btn btn-primary" onclick="saveAttendance()" id="saveBtn">💾 Save Attendance</button>
+    </div>
+
+    <!-- Controls -->
+    <div class="ctrl-card fu d1">
+      <div class="ctrl-group">
+        <label>Course / Training</label>
+        <select id="ctrl_course" onchange="loadStudentsForCourse()">
+          <option value="">Select course…</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>Session Date</label>
+        <input type="date" id="ctrl_date" onchange="loadAttendanceForDate()">
+      </div>
+      <div class="ctrl-group">
+        <label>Session</label>
+        <select id="ctrl_session">
+          <option value="Morning">🌅 Morning</option>
+          <option value="Afternoon">☀️ Afternoon</option>
+          <option value="Evening">🌆 Evening</option>
+          <option value="Full Day">📅 Full Day</option>
+        </select>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:flex-end;">
+        <button class="btn btn-outline btn-sm" onclick="markAll('Present')">✅ All Present</button>
+        <button class="btn btn-outline btn-sm" onclick="markAll('Absent')">❌ All Absent</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-row fu d2">
+      <div class="stat-card">
+        <div class="sc-icon" style="background:var(--purple-bg);">👥</div>
+        <div><div class="sc-val" id="statTotal">0</div><div class="sc-label">Total Students</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon" style="background:var(--green-bg);">✅</div>
+        <div><div class="sc-val" style="color:var(--green);" id="statPresent">0</div><div class="sc-label">Present</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon" style="background:var(--red-bg);">❌</div>
+        <div><div class="sc-val" style="color:var(--red);" id="statAbsent">0</div><div class="sc-label">Absent</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-icon" style="background:var(--gold-bg);">⏰</div>
+        <div><div class="sc-val" style="color:var(--gold);" id="statLate">0</div><div class="sc-label">Late</div></div>
+      </div>
+    </div>
+
+    <!-- Attendance table -->
+    <div class="card fu d3">
+      <div class="card-head">
+        <h3>📋 Student Attendance</h3>
+        <div class="card-head-right">
+          <span id="attDate" style="font-size:12px;color:var(--text3);font-weight:700;"></span>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student</th>
+              <th>Course</th>
+              <th>Mark Attendance</th>
+              <th>Status</th>
+              <th>Note</th>
+              <th>Overall %</th>
+            </tr>
+          </thead>
+          <tbody id="attTbody">
+            <tr><td colspan="7"><div class="empty-state">
+              <div class="e-icon">📋</div>
+              <h4>Select a course and date</h4>
+              <p>Choose a training course above to load students and mark attendance.</p>
+            </div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const AVATAR_COLORS = ['#7C3AED','#06B6D4','#10B981','#F97316','#EF4444','#3B82F6','#8B5CF6','#F59E0B'];
+const getColor = str => AVATAR_COLORS[(str||'A').charCodeAt(0) % AVATAR_COLORS.length];
+
+// attendance[courseId][date][studentId] = {status, note}
+let attendance = JSON.parse(localStorage.getItem('ng_attendance') || '{}');
+let students = [];
+let currentCourse = '';
+let currentDate = '';
+
+async function checkAuth(){
+  try{
+    const r = await fetch('auth.php?action=me',{credentials:'include'});
+    const j = await r.json();
+    if(!j.success){ location.href='login.html'; return null; }
+    const u = j.data;
+    const ini = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    ['sidebarAv','topbarAv'].forEach(id=>document.getElementById(id).textContent=ini);
+    document.getElementById('sidebarName').textContent = u.name;
+    document.getElementById('sidebarRole').textContent = u.role;
+    document.getElementById('topbarName').textContent  = u.name;
+    document.getElementById('topbarRole').textContent  = u.role;
+    return u;
+  }catch(e){ location.href='login.html'; return null; }
+}
+
+async function logout(){
+  await fetch('auth.php?action=logout',{credentials:'include'});
+  location.href='login.html';
+}
+
+async function loadCourses(){
+  try{
+    const r = await fetch('courses.php?action=list&status=Active',{credentials:'include'});
+    const j = await r.json();
+    if(!j.success) return;
+    const sel = document.getElementById('ctrl_course');
+    j.data.forEach(c=>{
+      const o = document.createElement('option');
+      o.value = c.id; o.textContent = c.name + (c.instructor ? ' — '+c.instructor : '');
+      sel.appendChild(o);
+    });
+  }catch(e){}
+}
+
+async function loadStudentsForCourse(){
+  currentCourse = document.getElementById('ctrl_course').value;
+  currentDate   = document.getElementById('ctrl_date').value;
+  if(!currentCourse){ students=[]; renderTable(); return; }
+
+  try{
+    const r = await fetch('students.php?action=list&status=Approved',{credentials:'include'});
+    const j = await r.json();
+    students = j.success ? j.data : [];
+    renderTable();
+  }catch(e){ students=[]; renderTable(); }
+}
+
+function loadAttendanceForDate(){
+  currentDate = document.getElementById('ctrl_date').value;
+  renderTable();
+}
+
+function renderTable(){
+  const tbody = document.getElementById('attTbody');
+  const dateLabel = currentDate ? new Date(currentDate+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}) : '';
+  document.getElementById('attDate').textContent = dateLabel;
+
+  if(!currentCourse){
+    tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="e-icon">📋</div><h4>Select a Course</h4><p>Choose a training course to load students.</p></div></td></tr>`;
+    updateStats(); return;
+  }
+  if(!students.length){
+    tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="e-icon">🎓</div><h4>No approved students</h4><p>No approved students found for this course.</p></div></td></tr>`;
+    updateStats(); return;
+  }
+
+  const dayKey = currentDate || new Date().toISOString().split('T')[0];
+  const courseAtt = attendance[currentCourse] || {};
+  const dayAtt    = courseAtt[dayKey] || {};
+
+  tbody.innerHTML = students.map((s,i) => {
+    const ini   = ((s.first_name||'?')[0]+(s.last_name||'?')[0]).toUpperCase();
+    const color = getColor(ini);
+    const sta   = dayAtt[s.id]?.status || '';
+    const note  = dayAtt[s.id]?.note  || '';
+
+    // Overall attendance % for this student across all days in this course
+    const allDays = Object.values(courseAtt);
+    const totalDays = allDays.length;
+    const presentDays = allDays.filter(d => d[s.id]?.status === 'Present').length;
+    const pct = totalDays > 0 ? Math.round((presentDays/totalDays)*100) : 0;
+    const pctColor = pct >= 75 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+
+    return `<tr id="row_${s.id}">
+      <td style="color:var(--text3);font-size:13px;">${i+1}</td>
+      <td><div class="stu-cell">
+        <div class="avatar" style="background:${color};">${ini}</div>
+        <div>
+          <div style="font-size:13.5px;font-weight:700;">${s.name||s.first_name+' '+s.last_name}</div>
+          <div style="font-size:11px;color:var(--text3);">ID #${s.id}</div>
+        </div>
+      </div></td>
+      <td style="font-size:12.5px;color:var(--text2);">${s.courses||'—'}</td>
+      <td>
+        <div class="att-toggle">
+          <button class="att-btn present ${sta==='Present'?'active-p':''}" onclick="setStatus(${s.id},'Present',this)">✅ Present</button>
+          <button class="att-btn absent  ${sta==='Absent' ?'active-a':''}" onclick="setStatus(${s.id},'Absent',this)">❌ Absent</button>
+          <button class="att-btn late    ${sta==='Late'   ?'active-l':''}" onclick="setStatus(${s.id},'Late',this)">⏰ Late</button>
+        </div>
+      </td>
+      <td>
+        ${sta ? `<span class="badge ${sta==='Present'?'b-present':sta==='Absent'?'b-absent':'b-late'}">${sta}</span>` : '<span style="color:var(--text3);font-size:12px;">—</span>'}
+      </td>
+      <td>
+        <input type="text" value="${note}" placeholder="Optional note…" 
+          style="background:#F9FAFB;border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;font-family:'Nunito',sans-serif;font-size:12px;outline:none;width:130px;"
+          oninput="setNote(${s.id},this.value)" onfocus="this.style.borderColor='var(--purple-lt)'" onblur="this.style.borderColor='var(--border)'">
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="prog-bar" style="width:60px;"><div class="prog-fill" style="width:${pct}%;background:${pctColor};"></div></div>
+          <span style="font-size:11px;color:var(--text3);font-weight:700;">${totalDays>0?pct+'%':'—'}</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  updateStats();
+}
+
+function setStatus(studentId, status, btn){
+  const dayKey = currentDate || new Date().toISOString().split('T')[0];
+  if(!attendance[currentCourse]) attendance[currentCourse] = {};
+  if(!attendance[currentCourse][dayKey]) attendance[currentCourse][dayKey] = {};
+  if(!attendance[currentCourse][dayKey][studentId]) attendance[currentCourse][dayKey][studentId] = {};
+  attendance[currentCourse][dayKey][studentId].status = status;
+
+  // Update button states in same row
+  const row = btn.closest('tr');
+  row.querySelectorAll('.att-btn').forEach(b=>{
+    b.classList.remove('active-p','active-a','active-l');
+  });
+  btn.classList.add(status==='Present'?'active-p':status==='Absent'?'active-a':'active-l');
+
+  // Update status badge
+  const tdStatus = row.querySelectorAll('td')[4];
+  const badgeCls = status==='Present'?'b-present':status==='Absent'?'b-absent':'b-late';
+  tdStatus.innerHTML = `<span class="badge ${badgeCls}">${status}</span>`;
+
+  updateStats();
+}
+
+function setNote(studentId, note){
+  const dayKey = currentDate || new Date().toISOString().split('T')[0];
+  if(!attendance[currentCourse]) attendance[currentCourse] = {};
+  if(!attendance[currentCourse][dayKey]) attendance[currentCourse][dayKey] = {};
+  if(!attendance[currentCourse][dayKey][studentId]) attendance[currentCourse][dayKey][studentId] = {};
+  attendance[currentCourse][dayKey][studentId].note = note;
+}
+
+function markAll(status){
+  if(!currentCourse || !students.length){ showToast('⚠️ Select a course first'); return; }
+  students.forEach(s => {
+    const row = document.getElementById('row_'+s.id);
+    if(!row) return;
+    const btn = row.querySelector('.att-btn.'+(status==='Present'?'present':status==='Absent'?'absent':'late'));
+    if(btn) setStatus(s.id, status, btn);
+  });
+  showToast(`✅ All marked as ${status}`);
+}
+
+function saveAttendance(){
+  if(!currentCourse){ showToast('⚠️ Select a course first'); return; }
+  if(!students.length){ showToast('⚠️ No students to save'); return; }
+  localStorage.setItem('ng_attendance', JSON.stringify(attendance));
+  const dayKey = currentDate || new Date().toISOString().split('T')[0];
+  const dayAtt = attendance[currentCourse]?.[dayKey] || {};
+  const marked = Object.values(dayAtt).filter(d=>d.status).length;
+  showToast(`💾 Attendance saved! ${marked} of ${students.length} students marked.`);
+  renderTable(); // refresh to show updated overall %
+}
+
+function updateStats(){
+  const dayKey = currentDate || new Date().toISOString().split('T')[0];
+  const dayAtt = (attendance[currentCourse]||{})[dayKey] || {};
+  const vals = Object.values(dayAtt).map(d=>d.status).filter(Boolean);
+  document.getElementById('statTotal').textContent   = students.length;
+  document.getElementById('statPresent').textContent = vals.filter(v=>v==='Present').length;
+  document.getElementById('statAbsent').textContent  = vals.filter(v=>v==='Absent').length;
+  document.getElementById('statLate').textContent    = vals.filter(v=>v==='Late').length;
+}
+
+function showToast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); },3500);
+}
+
+// Set today's date by default
+document.getElementById('ctrl_date').value = new Date().toISOString().split('T')[0];
+currentDate = document.getElementById('ctrl_date').value;
+
+(async()=>{
+  const user = await checkAuth();
+  if(!user) return;
+  await loadCourses();
+})();
+</script>
+</body>
+</html>

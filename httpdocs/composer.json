@@ -1,0 +1,11 @@
+{
+    "name": "nextgen/lms",
+    "description": "NextGen Technologies LMS",
+    "require": {
+        "php": ">=8.0",
+        "mpdf/mpdf": "^8.2"
+    },
+    "config": {
+        "vendor-dir": "httpdocs/vendor"
+    }
+}

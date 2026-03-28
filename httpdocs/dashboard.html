@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard · NextGen Technologies</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7C3AED;--purple-lt:#8B5CF6;--purple-bg:#F5F3FF;--purple-soft:#EDE9FE;--teal:#06B6D4;--teal-bg:#ECFEFF;--orange:#F97316;--orange-bg:#FFF7ED;--green:#10B981;--green-bg:#ECFDF5;--red:#EF4444;--bg:#F4F0FB;--white:#FFFFFF;--text:#1E1B4B;--text2:#6B7280;--text3:#9CA3AF;--border:#F3F4F6;--sidebar-w:230px;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;overflow:hidden;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);display:flex;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#DDD6FE;border-radius:10px;}
+.sidebar{width:var(--sidebar-w);height:100vh;background:var(--white);display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100;box-shadow:4px 0 20px rgba(124,58,237,0.07);overflow-y:auto;}
+.sb-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--purple-lt));display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;box-shadow:0 4px 12px rgba(124,58,237,0.3);}
+.sb-logo h2{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--purple);}
+.sb-nav{padding:12px 10px;flex:1;}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:10px 11px 4px;font-weight:700;}
+.sb-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .16s;text-decoration:none;margin-bottom:2px;position:relative;}
+.sb-link:hover{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--purple);}
+.s-icon{font-size:15px;width:18px;text-align:center;}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;}
+.sb-badge.green{background:var(--green);}
+.sidebar-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.user-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.user-info-text h4{font-size:13px;font-weight:700;}.user-info-text p{font-size:11px;color:var(--text3);}
+.logout-btn{margin-left:auto;background:none;border:none;font-size:17px;cursor:pointer;color:var(--text3);transition:color .2s;}.logout-btn:hover{color:var(--red);}
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{height:62px;flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 26px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(124,58,237,0.05);}
+.search-bar{flex:1;max-width:360px;position:relative;}
+.search-bar input{width:100%;background:#F9FAFB;border:1.5px solid var(--border);border-radius:12px;padding:9px 14px 9px 38px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.search-bar input:focus{border-color:var(--purple-lt);}.search-bar input::placeholder{color:var(--text3);}
+.search-bar svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);width:14px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.tb-icon-btn{width:36px;height:36px;border-radius:10px;background:#F9FAFB;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .18s;position:relative;}
+.tb-icon-btn:hover{border-color:var(--purple-lt);background:var(--purple-bg);}
+.tb-notif{position:absolute;top:7px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--red);border:1.5px solid #fff;}
+.tb-profile{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 5px;background:#F9FAFB;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:border-color .18s;}.tb-profile:hover{border-color:var(--purple-lt);}
+.tb-av{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--purple),#06B6D4);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+.tb-info span{display:block;font-size:12.5px;font-weight:700;line-height:1.2;}.tb-info small{font-size:11px;color:var(--text3);}
+.page{flex:1;overflow-y:auto;padding:22px 26px;}
+.page-title{font-family:'Poppins',sans-serif;font-size:21px;font-weight:700;margin-bottom:18px;}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.stat-card{background:var(--white);border-radius:14px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,0.04);transition:transform .2s,box-shadow .2s;}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(124,58,237,0.1);}
+.sc-label{font-size:12px;font-weight:600;color:var(--text3);margin-bottom:5px;}
+.sc-val{font-family:'Poppins',sans-serif;font-size:24px;font-weight:700;line-height:1;}
+.sc-icon{width:50px;height:50px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:21px;}
+.row{display:grid;gap:16px;margin-bottom:16px;}
+.r-70-30{grid-template-columns:1.9fr 1fr;}.r-60-40{grid-template-columns:1.55fr 1fr;}
+.card{background:var(--white);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,0.04);overflow:hidden;}
+.card-head{padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;}
+.card-head h3{font-family:'Poppins',sans-serif;font-size:14.5px;font-weight:600;}
+.ch-right{display:flex;align-items:center;gap:10px;}
+.legend{display:flex;align-items:center;gap:12px;}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);font-weight:700;}
+.leg-dot{width:9px;height:9px;border-radius:50%;}
+.period-sel{background:#F9FAFB;border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;font-family:'Nunito',sans-serif;font-size:12px;color:var(--text2);outline:none;cursor:pointer;}
+.dots-btn{width:26px;height:26px;border-radius:7px;background:#F9FAFB;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--text3);}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl thead th{padding:9px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);background:#FAFAFA;text-align:left;white-space:nowrap;}
+.tbl tbody td{padding:11px 14px;font-size:13px;font-weight:600;border-bottom:1px solid #F9FAFB;vertical-align:middle;}
+.tbl tbody tr:last-child td{border-bottom:none;}.tbl tbody tr:hover td{background:#FAFBFF;}
+.s-cell{display:flex;align-items:center;gap:9px;}
+.s-av{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;}
+.badge{display:inline-block;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;}
+.b-active{background:rgba(16,185,129,.1);color:var(--green);}.b-inactive{background:rgba(239,68,68,.1);color:var(--red);}
+.rp{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.rp-admin{background:rgba(124,58,237,.1);color:var(--purple);}
+.rp-user{background:rgba(6,182,212,.1);color:var(--teal);}
+.rp-staff{background:rgba(249,115,22,.1);color:var(--orange);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:12.5px;font-weight:700;transition:all .18s;}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--purple-lt));color:#fff;box-shadow:0 4px 14px rgba(124,58,237,.25);}.btn-primary:hover{opacity:.88;transform:translateY(-1px);}
+.btn-outline{background:#F9FAFB;border:1.5px solid var(--border);color:var(--text2);}.btn-outline:hover{border-color:var(--purple-lt);color:var(--purple);}
+.btn-danger{background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.2);color:var(--red);}
+.btn-sm{padding:5px 11px;font-size:11.5px;border-radius:8px;}
+.chk{width:16px;height:16px;border-radius:4px;border:2px solid #D1D5DB;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;}
+.chk.on{background:var(--purple);border-color:var(--purple);color:#fff;}
+.act-item{display:flex;align-items:flex-start;gap:11px;padding:11px 18px;border-bottom:1px solid #F9FAFB;transition:background .15s;}
+.act-item:last-child{border-bottom:none;}.act-item:hover{background:#FAFBFF;}
+.act-ic{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.act-body h4{font-size:12.5px;font-weight:700;margin-bottom:2px;}.act-body p{font-size:11.5px;color:var(--text3);line-height:1.5;}
+.act-time{font-size:11px;color:var(--text3);white-space:nowrap;margin-top:3px;flex-shrink:0;}
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:#fff;border-radius:18px;width:520px;max-width:95%;max-height:90vh;overflow-y:auto;transform:scale(.96) translateY(16px);transition:transform .3s cubic-bezier(.16,1,.3,1);}
+.modal-overlay.show .modal{transform:scale(1) translateY(0);}
+.modal-head{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-head h3{font-family:'Poppins',sans-serif;font-size:16px;font-weight:600;}
+.modal-close{width:28px;height:28px;background:#F3F4F6;border:none;border-radius:7px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .18s;}
+.modal-close:hover{background:rgba(239,68,68,.1);color:var(--red);}
+.modal-body{padding:22px 24px;}.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+.fg{margin-bottom:16px;}.fg label{display:block;font-size:11.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.fg input,.fg select{width:100%;background:#F9FAFB;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'Nunito',sans-serif;font-size:13.5px;color:var(--text);outline:none;transition:border-color .2s;}
+.fg input:focus,.fg select:focus{border-color:var(--purple-lt);background:#fff;}
+.fg-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.btn-cancel{background:#F3F4F6;border:none;border-radius:9px;padding:10px 20px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:var(--text2);transition:background .18s;}.btn-cancel:hover{background:#E5E7EB;}
+.btn-save{background:linear-gradient(135deg,var(--purple),var(--purple-lt));border:none;border-radius:9px;padding:10px 22px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;color:#fff;transition:opacity .18s;}.btn-save:hover{opacity:.88;}
+.fu{opacity:0;transform:translateY(14px);animation:fu .42s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes fu{to{opacity:1;transform:none;}}
+.d1{animation-delay:.04s}.d2{animation-delay:.09s}.d3{animation-delay:.14s}.d4{animation-delay:.19s}.d5{animation-delay:.24s}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎓</div>
+    <h2>NextGen Tech</h2>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-label">MAIN</div>
+    <a class="sb-link active" href="dashboard.html"><span class="s-icon">📊</span>Dashboard</a>
+    <div class="sb-label">MANAGEMENT</div>
+    <a class="sb-link" href="users.html"><span class="s-icon">👥</span>User Management</a>
+    <a class="sb-link" href="students.html"><span class="s-icon">🎓</span>Students<span class="sb-badge">5</span></a>
+    <a class="sb-link" href="student-registration.html"><span class="s-icon">📋</span>Registration</a>
+    <div class="sb-label">TRAINING</div>
+    <a class="sb-link" href="courses.html"><span class="s-icon">📚</span>Courses</a>
+    <a class="sb-link" href="certificates.html"><span class="s-icon">📜</span>Certificates<span class="sb-badge green">3</span></a>
+    <div class="sb-label">SYSTEM</div>
+    <a class="sb-link" href="attendance.html"><span class="s-icon">✅</span>Attendance</a>
+    <a class="sb-link" href="notices.html"><span class="s-icon">📢</span>Notices</a>
+    <a class="sb-link" href="#"><span class="s-icon">⚙️</span>Settings</a>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-av">AD</div>
+    <div class="user-info-text"><h4>Admin User</h4><p>Administrator</p></div>
+    <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="search-bar">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search students, users, courses...">
+    </div>
+    <div class="topbar-right">
+      <div class="tb-icon-btn">🔔<div class="tb-notif"></div></div>
+      <div class="tb-icon-btn">💬</div>
+      <div class="tb-profile">
+        <div class="tb-av">AD</div>
+        <div class="tb-info"><span>Admin User</span><small>Administrator</small></div>
+        <span style="font-size:10px;color:var(--text3);margin-left:2px;">▾</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-title fu">Admin Dashboard</div>
+
+    <div class="stat-row">
+      <div class="stat-card fu d1"><div><div class="sc-label">Total Students</div><div class="sc-val" style="color:var(--purple);">248</div></div><div class="sc-icon" style="background:var(--purple-soft);">🎓</div></div>
+      <div class="stat-card fu d2"><div><div class="sc-label">Active Users</div><div class="sc-val" style="color:var(--teal);">12</div></div><div class="sc-icon" style="background:var(--teal-bg);">👥</div></div>
+      <div class="stat-card fu d3"><div><div class="sc-label">Courses</div><div class="sc-val" style="color:var(--orange);">18</div></div><div class="sc-icon" style="background:var(--orange-bg);">📚</div></div>
+      <div class="stat-card fu d4"><div><div class="sc-label">Certificates</div><div class="sc-val" style="color:var(--green);">1,042</div></div><div class="sc-icon" style="background:var(--green-bg);">📜</div></div>
+    </div>
+
+    <!-- Chart + Donut -->
+    <div class="row r-70-30">
+      <div class="card fu d2">
+        <div class="card-head">
+          <h3>Enrollment Overview</h3>
+          <div class="ch-right">
+            <div class="legend"><div class="leg"><div class="leg-dot" style="background:var(--purple);"></div>Users</div><div class="leg"><div class="leg-dot" style="background:var(--teal);"></div>Students</div></div>
+            <select class="period-sel"><option>Monthly</option><option>Weekly</option><option>Yearly</option></select>
+          </div>
+        </div>
+        <div style="padding:0 18px 16px;"><canvas id="waveChart" height="155" style="width:100%;display:block;"></canvas></div>
+      </div>
+      <div class="card fu d3">
+        <div class="card-head"><h3>Students</h3><div class="dots-btn">⋯</div></div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:8px 18px 18px;">
+          <div style="position:relative;display:inline-block;margin-bottom:14px;">
+            <canvas id="donutChart" width="170" height="170"></canvas>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+              <div style="font-size:11px;color:var(--text3);font-weight:600;">Total</div>
+              <div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.1;">248</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:18px;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--text2);"><div style="width:10px;height:10px;border-radius:50%;background:var(--purple);"></div>Male</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--text2);"><div style="width:10px;height:10px;border-radius:50%;background:var(--orange);"></div>Female</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Management + Activity -->
+    <div class="row r-60-40">
+      <div class="card fu d3">
+        <div class="card-head">
+          <h3>User Management</h3>
+          <div class="ch-right">
+            <button class="btn btn-primary btn-sm" onclick="openModal('addUserModal')">+ Add User</button>
+            <a href="users.html" style="font-size:12px;color:var(--purple);font-weight:700;text-decoration:none;">View All →</a>
+          </div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>User</th><th>Username</th><th>Role</th><th>Status</th><th></th></tr></thead>
+          <tbody id="userTbody"></tbody>
+        </table>
+      </div>
+      <div class="card fu d4">
+        <div class="card-head"><h3>Recent Activity</h3><div class="dots-btn">⋯</div></div>
+        <div id="actFeed"></div>
+      </div>
+    </div>
+
+    <!-- Top Students -->
+    <div class="row">
+      <div class="card fu d5">
+        <div class="card-head">
+          <h3>Top Students</h3>
+          <a href="students.html" style="font-size:12px;color:var(--purple);font-weight:700;text-decoration:none;">View All →</a>
+        </div>
+        <table class="tbl">
+          <thead><tr><th></th><th>Name</th><th>ID</th><th>Course</th><th>Progress</th><th>Year</th></tr></thead>
+          <tbody id="starTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal">
+    <div class="modal-head"><h3>👤 Add New User</h3><button class="modal-close" onclick="closeModal('addUserModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg-grid">
+        <div class="fg"><label>First Name *</label><input type="text" id="u_fn" placeholder="First name"></div>
+        <div class="fg"><label>Last Name *</label><input type="text" id="u_ln" placeholder="Last name"></div>
+        <div class="fg"><label>Email</label><input type="email" id="u_em" placeholder="email@nextgen.com"></div>
+        <div class="fg"><label>Username</label><input type="text" id="u_un" placeholder="auto-generated"></div>
+        <div class="fg"><label>Role *</label><select id="u_role"><option value="">Select role</option><option>Admin</option><option>User</option><option>Staff</option></select></div>
+        <div class="fg"><label>Department</label><input type="text" id="u_dept" placeholder="e.g. Technology"></div>
+        <div class="fg"><label>Password *</label><input type="password" id="u_pw" placeholder="Min 6 characters"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal('addUserModal')">Cancel</button>
+      <button class="btn-save" onclick="addUser()">✅ Create User</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const s=sessionStorage.getItem('ng_user');
+  if(!s){window.location.href='login.html';return;}
+  const u=JSON.parse(s);
+  if(u.role!=='Admin'){window.location.href='user-dashboard.html';}
+})();
+function logout(){sessionStorage.removeItem('ng_user');window.location.href='login.html';}
+
+// Wave chart
+(function(){
+  const canvas=document.getElementById('waveChart'),ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1;
+  function resize(){const W=canvas.parentElement.clientWidth,H=155;canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);draw(W,H);}
+  function draw(W,H){ctx.clearRect(0,0,W,H);const pL=44,pR=16,pT=10,pB=28,cW=W-pL-pR,cH=H-pT-pB;
+    [0,25,50,75,100].forEach(v=>{const y=pT+cH-(v/100)*cH;ctx.font='10.5px Nunito';ctx.fillStyle='#C4C4C4';ctx.textAlign='right';ctx.fillText(v===0?'0':v+'k',pL-7,y+4);ctx.beginPath();ctx.strokeStyle='#F3F4F6';ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.moveTo(pL,y);ctx.lineTo(pL+cW,y);ctx.stroke();ctx.setLineDash([]);});
+    const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];ctx.textAlign='center';ctx.fillStyle='#9CA3AF';days.forEach((d,i)=>{ctx.fillText(d,pL+(i/(days.length-1))*cW,H-7);});
+    function wave(amp,freq,phase,color){const N=100,pts=Array.from({length:N},(_,i)=>{const t=i/(N-1);return{x:pL+t*cW,y:pT+cH*(0.5-amp*Math.sin(2*Math.PI*freq*t+phase))};});ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';pts.forEach((p,i)=>{if(i===0){ctx.moveTo(p.x,p.y);return;}const pp=pts[i-1],cpx=(pp.x+p.x)/2;ctx.bezierCurveTo(cpx,pp.y,cpx,p.y,p.x,p.y);});ctx.stroke();}
+    wave(0.38,2.1,0,'#7C3AED');wave(0.38,2.1,Math.PI*0.55,'#06B6D4');}
+  resize();new ResizeObserver(resize).observe(canvas.parentElement);
+})();
+
+// Donut
+(function(){const c=document.getElementById('donutChart'),ctx=c.getContext('2d'),dpr=window.devicePixelRatio||1;c.width=170*dpr;c.height=170*dpr;ctx.scale(dpr,dpr);const cx=85,cy=85,oR=72,iR=50,gap=0.035,sa=-Math.PI/2;const me=sa+(0.62-gap)*2*Math.PI;ctx.beginPath();ctx.arc(cx,cy,oR,sa+gap,me);ctx.arc(cx,cy,iR,me,sa+gap,true);ctx.closePath();const g1=ctx.createLinearGradient(0,0,170,170);g1.addColorStop(0,'#7C3AED');g1.addColorStop(1,'#A78BFA');ctx.fillStyle=g1;ctx.fill();const fs=me+gap*2,fe=sa+2*Math.PI-gap;ctx.beginPath();ctx.arc(cx,cy,oR,fs,fe);ctx.arc(cx,cy,iR,fe,fs,true);ctx.closePath();const g2=ctx.createLinearGradient(170,0,0,170);g2.addColorStop(0,'#F97316');g2.addColorStop(1,'#FCD34D');ctx.fillStyle=g2;ctx.fill();})();
+
+const COLORS=['#7C3AED','#06B6D4','#F97316','#10B981','#EF4444','#8B5CF6'];
+function avColor(n){let h=0;for(const c of n)h=(h+c.charCodeAt(0))%COLORS.length;return COLORS[h];}
+function initials(n){return n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+
+// ── Stats ────────────────────────────────────────────────────
+async function loadStats() {
+  const r = await fetch('dashboard.php?action=stats', {credentials:'include'});
+  const j = await r.json();
+  if (!j.success) return;
+  const d = j.data;
+  document.querySelector('.stat-card:nth-child(1) .sc-val').textContent = d.total_students   || 0;
+  document.querySelector('.stat-card:nth-child(2) .sc-val').textContent = d.active_users     || 0;
+  document.querySelector('.stat-card:nth-child(3) .sc-val').textContent = d.total_courses    || 0;
+  document.querySelector('.stat-card:nth-child(4) .sc-val').textContent = d.total_certs      || 0;
+}
+
+// ── Users ─────────────────────────────────────────────────────
+async function loadUsers() {
+  const r = await fetch('users.php?action=list', {credentials:'include'});
+  const j = await r.json();
+  const tbody = document.getElementById('userTbody');
+  if (!j.success || !j.data.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:#9CA3AF;font-size:13px;">No users found. Add your first user.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = j.data.slice(0,5).map(u => `
+  <tr>
+    <td><div class="s-cell"><div class="s-av" style="background:${avColor(u.name)}">${initials(u.name)}</div>
+      <div><div style="font-size:13px;font-weight:700;">${u.name}</div><div style="font-size:11px;color:var(--text3);">${u.email}</div></div></div></td>
+    <td><code style="font-size:11px;background:#F3F4F6;padding:2px 8px;border-radius:6px;color:var(--text2);">${u.username}</code></td>
+    <td><span class="rp ${u.role==='Admin'?'rp-admin':u.role==='User'?'rp-user':'rp-staff'}">${u.role}</span></td>
+    <td><span class="badge ${u.status==='Active'?'b-active':'b-inactive'}">${u.status}</span></td>
+    <td><button class="btn btn-danger btn-sm" onclick="delUser(${u.id})">🗑️</button></td>
+  </tr>`).join('');
+}
+
+async function addUser() {
+  const fn=document.getElementById('u_fn').value.trim(), ln=document.getElementById('u_ln').value.trim(), role=document.getElementById('u_role').value;
+  if (!fn||!ln||!role) { showToast('⚠️ Fill all required fields','warn'); return; }
+  const r = await fetch('users.php?action=create', {
+    method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ name: fn+' '+ln, username: (fn+'.'+ln).toLowerCase().replace(/\s/g,''),
+      email: document.getElementById('u_em').value, password: document.getElementById('u_pw')?.value || 'User@123',
+      role, department: document.getElementById('u_dept').value })
+  });
+  const j = await r.json();
+  if (j.success) { closeModal('addUserModal'); loadUsers(); loadStats(); showToast('✅ User created!'); }
+  else showToast('❌ '+j.message, 'error');
+}
+
+async function delUser(id) {
+  if (!confirm('Remove this user?')) return;
+  const r = await fetch('users.php?action=delete', {method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  const j = await r.json();
+  if (j.success) { loadUsers(); loadStats(); showToast('🗑️ User removed'); }
+  else showToast('❌ '+j.message,'error');
+}
+
+// ── Top Students ─────────────────────────────────────────────
+async function loadTopStudents() {
+  const r = await fetch('students.php?action=list', {credentials:'include'});
+  const j = await r.json();
+  const tbody = document.getElementById('starTbody');
+  if (!j.success || !j.data.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#9CA3AF;font-size:13px;">No students registered yet.</td></tr>';
+    return;
+  }
+  const colors = COLORS;
+  tbody.innerHTML = j.data.slice(0,5).map((s,i) => {
+    const c = colors[i % colors.length];
+    const prog = Math.round(parseFloat(s.avg_progress)||0);
+    return `<tr>
+      <td><div class="chk" onclick="this.classList.toggle('on')">✓</div></td>
+      <td><div class="s-cell"><div class="s-av" style="background:${c}">${initials(s.name)}</div><span>${s.name}</span></div></td>
+      <td style="color:var(--text3);font-size:12px;">${s.id}</td>
+      <td style="font-size:12.5px;">${s.courses || '—'}</td>
+      <td><div style="display:flex;align-items:center;gap:7px;">
+        <div style="flex:1;background:#F3F4F6;border-radius:6px;height:6px;min-width:55px;overflow:hidden;">
+          <div style="width:${prog}%;height:100%;border-radius:6px;background:${c};"></div></div>
+        <span style="font-size:12px;font-weight:800;color:${c};">${prog}%</span>
+      </div></td>
+      <td style="font-size:12.5px;color:var(--text3);">${new Date(s.registered_at).getFullYear()}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Activity ─────────────────────────────────────────────────
+async function loadActivity() {
+  const r = await fetch('dashboard.php?action=activity&limit=5', {credentials:'include'});
+  const j = await r.json();
+  const feed = document.getElementById('actFeed');
+  if (!j.success || !j.data.length) {
+    feed.innerHTML = '<div style="text-align:center;padding:28px;color:#9CA3AF;font-size:13px;">No activity yet.</div>'; return;
+  }
+  const icons = {'LOGIN':'👤','LOGOUT':'🔒','USER_CREATED':'👥','USER_DELETED':'🗑️','STUDENT_CREATED':'🎓','STUDENT_APPROVED':'✅','CERT_GENERATED':'📜','COURSE_CREATED':'📚'};
+  const bgs   = {'LOGIN':'#EDE9FE','STUDENT_CREATED':'#ECFDF5','CERT_GENERATED':'#EFF6FF','COURSE_CREATED':'#FFF7ED','USER_CREATED':'#EDE9FE'};
+  feed.innerHTML = j.data.map(a => `
+  <div class="act-item">
+    <div class="act-ic" style="background:${bgs[a.action]||'#F3F4F6'}">${icons[a.action]||'⚡'}</div>
+    <div class="act-body"><h4>${a.action.replace(/_/g,' ')}</h4><p>${a.description||''}</p></div>
+    <div class="act-time">${new Date(a.logged_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}</div>
+  </div>`).join('');
+}
+
+function showToast(msg, type='success') {
+  const c={success:'background:#1E1B4B;color:#fff',error:'background:#FEF2F2;color:#991B1B',warn:'background:#FEF3C7;color:#92400E'}[type]||'background:#1E1B4B;color:#fff';
+  const t=document.createElement('div'); t.style.cssText=`position:fixed;bottom:24px;right:24px;${c};border-radius:12px;padding:13px 20px;font-size:13px;font-weight:600;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,.2);`;
+  t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);},3500);
+}
+
+// ── Init ─────────────────────────────────────────────────────
+(async () => {
+  const r = await fetch('auth.php?action=me', {credentials:'include'});
+  const j = await r.json();
+  if (!j.success) { location.href='login.html'; return; }
+  if (j.data.role !== 'Admin') { location.href='user-dashboard.html'; return; }
+  document.querySelectorAll('.tb-info span, #sidebarName').forEach(el => el.textContent = j.data.name);
+  loadStats(); loadUsers(); loadTopStudents(); loadActivity();
+})();
+</script>
+</body>
+</html>
