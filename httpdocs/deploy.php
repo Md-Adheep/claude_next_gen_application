@@ -1,13 +1,10 @@
 <?php
 // ============================================================
 //  deploy.php — Auto-deployment webhook
-//  Called by GitHub Actions on every push.
-//  DO NOT expose this URL publicly — protect with secret token.
+//  Called by GitHub Actions on every push to main.
 // ============================================================
 
-// ── Config ───────────────────────────────────────────────────
 define('DEPLOY_SECRET', getenv('DEPLOY_SECRET') ?: 'Md.Adheep@2005');
-
 define('DEPLOY_BRANCH', 'main');
 define('LOG_FILE',      __DIR__ . '/deploy.log');
 
@@ -33,46 +30,63 @@ $pusher  = $payload['pusher'] ?? 'unknown';
 
 writeLog('DEPLOY_START', "Branch: $branch | Commit: $commit | By: $pusher");
 
-// ── Run git pull ─────────────────────────────────────────────
-$projectDir = escapeshellarg(__DIR__);
-$gitBranch  = escapeshellarg(DEPLOY_BRANCH);
+// ── Find git repo root (could be httpdocs or one level up) ───
+$repoDir = __DIR__;
+if (!is_dir($repoDir . '/.git') && is_dir(dirname($repoDir) . '/.git')) {
+    $repoDir = dirname($repoDir);
+}
+
+if (!is_dir($repoDir . '/.git')) {
+    http_response_code(500);
+    $msg = 'Git repo not found. Run: cd ' . $repoDir . ' && git init && git remote add origin YOUR_REPO_URL && git pull origin main';
+    writeLog('ERROR', $msg);
+    die(json_encode(['success' => false, 'error' => $msg]));
+}
+
+// ── Check exec availability ───────────────────────────────────
+if (!function_exists('exec') && !function_exists('shell_exec')) {
+    http_response_code(500);
+    $msg = 'exec() and shell_exec() are both disabled. Enable one in Plesk PHP settings.';
+    writeLog('ERROR', $msg);
+    die(json_encode(['success' => false, 'error' => $msg]));
+}
+
+// ── Run git commands synchronously (NO & background) ─────────
+$dir    = escapeshellarg($repoDir);
+$branch = escapeshellarg(DEPLOY_BRANCH);
 
 $commands = [
-    "cd {$projectDir} && git fetch origin >> " . LOG_FILE . " 2>&1 &",
-    "cd {$projectDir} && git reset --hard origin/{$gitBranch} >> " . LOG_FILE . " 2>&1 &",
+    "cd $dir && git fetch origin 2>&1",
+    "cd $dir && git reset --hard origin/" . DEPLOY_BRANCH . " 2>&1",
 ];
 
-$output = [];
+$output  = [];
 $success = true;
 
 foreach ($commands as $cmd) {
-    $result = null;
-    $exitCode = null;
+    $result   = [];
+    $exitCode = 0;
 
     if (function_exists('exec')) {
         exec($cmd, $result, $exitCode);
         $line = implode("\n", $result);
-    } elseif (function_exists('shell_exec')) {
-        $line    = shell_exec($cmd) ?? '';
-        $exitCode = 0;
     } else {
-        http_response_code(500);
-        $msg = 'exec() and shell_exec() are disabled on this server. Enable one in php.ini or Plesk PHP settings.';
-        writeLog('ERROR', $msg);
-        die(json_encode(['success' => false, 'error' => $msg]));
+        $line     = shell_exec($cmd) ?? '';
+        $exitCode = 0;
     }
 
-    $output[] = $line;
-    if ($exitCode !== 0 && $exitCode !== null) {
+    $output[] = trim($line);
+    writeLog('CMD', "$cmd\nExit: $exitCode\n$line");
+
+    if ($exitCode !== 0) {
         $success = false;
         writeLog('ERROR', "Command failed (exit $exitCode): $cmd\n$line");
         break;
     }
 }
 
-$status = $success ? 'DEPLOY_OK' : 'DEPLOY_FAILED';
 $fullOutput = implode("\n", $output);
-writeLog($status, "Commit: $commit\n" . $fullOutput);
+writeLog($success ? 'DEPLOY_OK' : 'DEPLOY_FAILED', "Commit: $commit\n$fullOutput");
 
 http_response_code($success ? 200 : 500);
 echo json_encode([
