@@ -327,7 +327,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
                 <option value="">Select instructor…</option>
               </select>
             </div>
-            <div id="selectedUserInfo" style="display:none;background:var(--purple-bg);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+            <div id="selectedUserInfo" style="display:none;background:var(--purple-bg);border-radius:10px;padding:12px 16px;margin-bottom:16px;align-items:center;gap:12px;">
               <div id="resetUserAv" style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;"></div>
               <div><div id="resetUserName" style="font-weight:700;font-size:13px;"></div><div id="resetUserEmail" style="font-size:12px;color:var(--text3);"></div></div>
             </div>
@@ -612,7 +612,7 @@ async function testSmtp() {
 
 // ── Load Instructors for password reset ───────────────────
 async function loadInstructorList() {
-  const r = await fetch('users.php?action=list&role=Instructor&status=Active', {credentials:'include'});
+  const r = await fetch('users.php?action=list&role=User&status=Active', {credentials:'include'});
   const j = await r.json();
   if (!j.success) return;
   const sel = document.getElementById('reset_user_id');
