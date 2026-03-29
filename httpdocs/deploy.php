@@ -34,12 +34,12 @@ $pusher  = $payload['pusher'] ?? 'unknown';
 writeLog('DEPLOY_START', "Branch: $branch | Commit: $commit | By: $pusher");
 
 // ── Run git pull ─────────────────────────────────────────────
-$projectDir = escapeshellarg(__DIR__);
+$projectDir = escapeshellarg(dirname(__DIR__));
 $gitBranch  = escapeshellarg(DEPLOY_BRANCH);
 
 $commands = [
-    "cd {$projectDir} && git fetch origin >> " . LOG_FILE . " 2>&1 &",
-    "cd {$projectDir} && git reset --hard origin/{$gitBranch} >> " . LOG_FILE . " 2>&1 &",
+    "cd {$projectDir} && git fetch origin 2>&1",
+    "cd {$projectDir} && git reset --hard origin/{$gitBranch} 2>&1",
 ];
 
 $output = [];
