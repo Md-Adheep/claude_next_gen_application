@@ -1,7 +1,7 @@
 <?php
 // ============================================================
 //  deploy.php — Auto-deployment webhook
-//  Called by GitHub Actions on every push.
+//  Called by GitHub Actions on every push..
 //  DO NOT expose this URL publicly — protect with secret token.
 // ============================================================
 
@@ -70,7 +70,7 @@ foreach ($commands as $cmd) {
     }
 }
 
-$status = $success ? 'DEPLOY_OK' : 'DEPLOY_FAILED';
+$status = $success ? 'DEPLOY_OKK' : 'DEPLOY_FAILED';
 $fullOutput = implode("\n", $output);
 writeLog($status, "Commit: $commit\n" . $fullOutput);
 
