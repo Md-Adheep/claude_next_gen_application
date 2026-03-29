@@ -34,7 +34,7 @@ $pusher  = $payload['pusher'] ?? 'unknown';
 writeLog('DEPLOY_START', "Branch: $branch | Commit: $commit | By: $pusher");
 
 // ── Run git pull ─────────────────────────────────────────────
-$projectDir = escapeshellarg(dirname(__DIR__));
+$projectDir = escapeshellarg('/var/www/vhosts/nextgen.codesen.com/httpdocs');
 $gitBranch  = escapeshellarg(DEPLOY_BRANCH);
 
 $commands = [
