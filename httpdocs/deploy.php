@@ -1,7 +1,8 @@
 <?php
 // ============================================================
 //  deploy.php — Auto-deployment webhook
-//  Called by GitHub Actions on every push to main.
+//  Called by GitHub Actions on every push.
+//  DO NOT expose this URL publicly — protect with secret token.
 // ============================================================
 
 define('DEPLOY_SECRET', getenv('DEPLOY_SECRET') ?: 'Md.Adheep@2005');
@@ -30,47 +31,13 @@ $pusher  = $payload['pusher'] ?? 'unknown';
 
 writeLog('DEPLOY_START', "Branch: $branch | Commit: $commit | By: $pusher");
 
-// ── Find git binary ───────────────────────────────────────────
-$gitBin = trim((string)shell_exec('which git 2>/dev/null'))
-       ?: trim((string)shell_exec('command -v git 2>/dev/null'));
-
-if (!$gitBin) {
-    foreach (['/usr/bin/git', '/usr/local/bin/git', '/opt/plesk/git/bin/git'] as $p) {
-        if (file_exists($p)) { $gitBin = $p; break; }
-    }
-}
-
-if (!$gitBin) {
-    http_response_code(500);
-    $msg = 'git not found in PATH. PATH=' . getenv('PATH');
-    writeLog('ERROR', $msg);
-    die(json_encode(['success' => false, 'error' => $msg]));
-}
-
-writeLog('INFO', "Using git: $gitBin");
-
-// ── Find git repo root ────────────────────────────────────────
-$repoDir = __DIR__;
-if (!is_dir($repoDir . '/.git') && is_dir(dirname($repoDir) . '/.git')) {
-    $repoDir = dirname($repoDir);
-}
-
-if (!is_dir($repoDir . '/.git')) {
-    http_response_code(500);
-    $msg = 'Git repo not found at: ' . $repoDir . ' or ' . dirname($repoDir);
-    writeLog('ERROR', $msg);
-    die(json_encode(['success' => false, 'error' => $msg]));
-}
-
-writeLog('INFO', "Repo dir: $repoDir");
-
-// ── Run git commands ──────────────────────────────────────────
-$dir = escapeshellarg($repoDir);
-$git = escapeshellarg($gitBin);
+// ── Run git pull ─────────────────────────────────────────────
+$projectDir = escapeshellarg(__DIR__);
+$gitBranch  = escapeshellarg(DEPLOY_BRANCH);
 
 $commands = [
-    "cd $dir && HOME=/tmp $git fetch origin 2>&1",
-    "cd $dir && HOME=/tmp $git reset --hard origin/" . DEPLOY_BRANCH . " 2>&1",
+    "cd {$projectDir} && git fetch origin >> " . LOG_FILE . " 2>&1 &",
+    "cd {$projectDir} && git reset --hard origin/{$gitBranch} >> " . LOG_FILE . " 2>&1 &",
 ];
 
 $output  = [];
@@ -98,6 +65,7 @@ foreach ($commands as $cmd) {
     }
 }
 
+$status = $success ? 'DEPLOY_OK' : 'DEPLOY_FAILED';
 $fullOutput = implode("\n", $output);
 writeLog($success ? 'DEPLOY_OK' : 'DEPLOY_FAILED', $fullOutput);
 
