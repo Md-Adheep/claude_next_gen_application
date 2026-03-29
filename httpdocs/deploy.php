@@ -34,12 +34,13 @@ $pusher  = $payload['pusher'] ?? 'unknown';
 writeLog('DEPLOY_START', "Branch: $branch | Commit: $commit | By: $pusher");
 
 // ── Run git pull ─────────────────────────────────────────────
-$projectDir = escapeshellarg('/var/www/vhosts/nextgen.codesen.com/httpdocs');
+$projectDir = escapeshellarg(__DIR__);
+$gitDir = escapeshellarg(dirname(__DIR__) . '/git');
 $gitBranch  = escapeshellarg(DEPLOY_BRANCH);
 
 $commands = [
-    "cd {$projectDir} && git fetch origin 2>&1",
-	"cd {$projectDir} && git reset --hard origin/{$gitBranch} 2>&1",
+    "git --git-dir={$gitDir} --work-tree={$projectDir} fetch origin 2>&1",
+    "git --git-dir={$gitDir} --work-tree={$projectDir} reset --hard origin/main 2>&1",
 ];
 
 $output = [];
