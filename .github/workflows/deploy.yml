@@ -7,15 +7,14 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Plesk via FTPS/lftp
+    name: Deploy to Plesk Server
     runs-on: ubuntu-latest
 
     steps:
-      # ── Step 1: Show deploy info ──────────────────────────────
       - name: 📋 Deployment info
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "  🚀 NextGen LMS — FTPS Deploy"
+          echo "  🚀 NextGen LMS — Auto Deploy"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "  Branch  : ${{ github.ref_name }}"
           echo "  Commit  : ${{ github.sha }}"
@@ -23,37 +22,46 @@ jobs:
           echo "  Message : ${{ github.event.head_commit.message }}"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-      # ── Step 2: Checkout code ─────────────────────────────────
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
-
-      # ── Step 3: Install lftp ──────────────────────────────────
-      - name: 🔧 Install lftp
-        run: sudo apt-get install -y lftp
-
-      # ── Step 4: Deploy via FTPS ───────────────────────────────
-      - name: 📤 Upload files to Plesk via FTPS
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USER: ${{ secrets.FTP_USERNAME }}
-          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+      - name: 🔗 Trigger Plesk deployment
+        timeout-minutes: 2
         run: |
-          lftp -c "
-            set ftp:ssl-allow yes;
-            set ftp:ssl-force yes;
-            set ssl:verify-certificate no;
-            set ftp:passive-mode yes;
-            open -u '$FTP_USER','$FTP_PASS' ftps://$FTP_SERVER;
-            mirror --reverse --delete --verbose ./httpdocs/ /httpdocs/;
-            quit
-          "
+          HTTP_STATUS=$(curl -s -k -o /tmp/deploy_response.txt -w "%{http_code}" \
+            --max-time 60 \
+            --connect-timeout 30 \
+            -X POST "https://nextgen.codesen.com/deploy.php" \
+            -H "X-Deploy-Token: ${{ secrets.DEPLOY_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "branch": "${{ github.ref_name }}",
+              "commit": "${{ github.sha }}",
+              "pusher": "${{ github.actor }}"
+            }')
 
-      # ── Step 5: Success summary ───────────────────────────────
+          echo "📡 HTTP Status : $HTTP_STATUS"
+          echo "📄 Response    :"
+          cat /tmp/deploy_response.txt
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "❌ Deployment failed! HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+          echo "✅ Plesk pulled latest code!"
+
       - name: ✅ Deployment complete
+        if: success()
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "  ✅ FTPS Deployment Successful!"
-          echo "  🌐 Live at: https://www.nextgen.codesen.com"
+          echo "  ✅ Deployment Successful!"
+          echo "  🌐 Live at: https://nextgen.codesen.com"
           echo "  📝 Commit : ${{ github.sha }}"
           echo "  👤 By     : ${{ github.actor }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+      - name: ❌ Deploy failed
+        if: failure()
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "  ❌ Deployment FAILED!"
+          echo "  Check response above for details"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
