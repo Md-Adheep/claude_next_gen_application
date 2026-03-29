@@ -5,7 +5,9 @@
 //  DO NOT expose this URL publicly — protect with secret token.
 // ============================================================
 
+// ── Config ───────────────────────────────────────────────────
 define('DEPLOY_SECRET', getenv('DEPLOY_SECRET') ?: 'Md.Adheep@2005');
+
 define('DEPLOY_BRANCH', 'main');
 define('LOG_FILE',      __DIR__ . '/deploy.log');
 
@@ -19,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $token = $_SERVER['HTTP_X_DEPLOY_TOKEN'] ?? '';
 if (!hash_equals(DEPLOY_SECRET, $token)) {
     http_response_code(403);
-    writeLog('BLOCKED', 'Invalid token: "' . $token . '" from ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+    writeLog('BLOCKED', 'Invalid token from ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
     die(json_encode(['error' => 'Unauthorized']));
 }
 
@@ -32,42 +34,45 @@ $pusher  = $payload['pusher'] ?? 'unknown';
 writeLog('DEPLOY_START', "Branch: $branch | Commit: $commit | By: $pusher");
 
 // ── Run git pull ─────────────────────────────────────────────
-$projectDir = escapeshellarg(__DIR__);
+$projectDir = escapeshellarg(dirname(__DIR__));
 $gitBranch  = escapeshellarg(DEPLOY_BRANCH);
 
 $commands = [
-    "cd {$projectDir} && git fetch origin >> " . LOG_FILE . " 2>&1 &",
-    "cd {$projectDir} && git reset --hard origin/{$gitBranch} >> " . LOG_FILE . " 2>&1 &",
+    "cd {$projectDir} && git fetch origin 2>&1",
+	"cd {$projectDir} && git reset --hard origin/{$gitBranch} 2>&1",
 ];
 
-$output  = [];
+$output = [];
 $success = true;
 
 foreach ($commands as $cmd) {
-    $result   = [];
-    $exitCode = 0;
+    $result = null;
+    $exitCode = null;
 
     if (function_exists('exec')) {
         exec($cmd, $result, $exitCode);
         $line = implode("\n", $result);
-    } else {
-        $line     = (string)(shell_exec($cmd) ?? '');
+    } elseif (function_exists('shell_exec')) {
+        $line    = shell_exec($cmd) ?? '';
         $exitCode = 0;
+    } else {
+        http_response_code(500);
+        $msg = 'exec() and shell_exec() are disabled on this server. Enable one in php.ini or Plesk PHP settings.';
+        writeLog('ERROR', $msg);
+        die(json_encode(['success' => false, 'error' => $msg]));
     }
 
-    $output[] = trim($line);
-    writeLog('CMD', "Exit:$exitCode | $cmd\n$line");
-
-    if ($exitCode !== 0) {
+    $output[] = $line;
+    if ($exitCode !== 0 && $exitCode !== null) {
         $success = false;
-        writeLog('ERROR', "Failed (exit $exitCode): $line");
+        writeLog('ERROR', "Command failed (exit $exitCode): $cmd\n$line");
         break;
     }
 }
 
 $status = $success ? 'DEPLOY_OK' : 'DEPLOY_FAILED';
 $fullOutput = implode("\n", $output);
-writeLog($success ? 'DEPLOY_OK' : 'DEPLOY_FAILED', $fullOutput);
+writeLog($status, "Commit: $commit\n" . $fullOutput);
 
 http_response_code($success ? 200 : 500);
 echo json_encode([
