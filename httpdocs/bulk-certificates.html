@@ -272,7 +272,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
                 <th>Grade</th>
                 <th>Issue Date</th>
                 <th>Status</th>
-                <th>Edit</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="previewBody"></tbody>
@@ -447,8 +447,11 @@ function showPreview(rows) {
       <td style="color:var(--text2)">${esc(r.course_name) || '<span style="color:var(--text3);font-style:italic">global</span>'}</td>
       <td style="color:var(--text2)">${esc(r.grade) || '<span style="color:var(--text3);font-style:italic">global</span>'}</td>
       <td style="color:var(--text2)">${esc(r.issue_date) || '<span style="color:var(--text3);font-style:italic">global</span>'}</td>
-      <td><span class="badge ${r._error ? 'failed' : 'pending'}">${r._error ? '⚠ Error' : 'Ready'}</span></td>
-      <td><button class="btn-edit" onclick="editRow(${i})">✏️ Edit</button></td>
+      <td><span class="badge ${r._sent ? 'sent' : r._error ? 'failed' : 'pending'}" id="badge-${i}">${r._sent ? '✓ Sent' : r._error ? '⚠ Error' : 'Ready'}</span></td>
+      <td style="display:flex;gap:6px;align-items:center;">
+        <button class="btn-edit" onclick="editRow(${i})" ${r._sent ? 'disabled style="opacity:.4"' : ''}>✏️</button>
+        <button class="btn-edit" id="sendOneBtn-${i}" onclick="sendOne(${i})" ${r._sent ? 'disabled style="opacity:.4;color:var(--green)"' : 'style="color:var(--green);border-color:#D1FAE5;"'}>${r._sent ? '✓ Sent' : '📧 Send'}</button>
+      </td>
     </tr>
   `).join('');
 }
@@ -515,6 +518,49 @@ function saveEdit() {
 document.getElementById('editModal').addEventListener('click', function(e) {
   if (e.target === this) closeEdit();
 });
+
+async function sendOne(i) {
+  const btn   = document.getElementById('sendOneBtn-' + i);
+  const badge = document.getElementById('badge-' + i);
+  if (!btn || parsedRows[i]._sent) return;
+  btn.textContent = '⏳';
+  btn.disabled    = true;
+
+  try {
+    const r = await fetch('bulk_cert.php?action=send_all', {
+      method: 'POST', credentials: 'include',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        organisation:  document.getElementById('cfg_org').value.trim(),
+        director_name: document.getElementById('cfg_director').value.trim(),
+        cert_type:     document.getElementById('cfg_type').value,
+        course_name:   document.getElementById('cfg_course').value.trim(),
+        grade:         document.getElementById('cfg_grade').value.trim(),
+        issue_date:    document.getElementById('cfg_issue_date').value,
+        rows:          [parsedRows[i]]
+      })
+    });
+    const j = await r.json();
+    const res = j.data?.results?.[0];
+    if (res?.status === 'sent') {
+      parsedRows[i]._sent = true;
+      btn.textContent = '✓ Sent';
+      btn.style.cssText = 'color:var(--green);border-color:#D1FAE5;opacity:.6;cursor:default;';
+      badge.className = 'badge sent';
+      badge.textContent = '✓ Sent';
+    } else {
+      btn.textContent = '❌ Retry';
+      btn.disabled    = false;
+      badge.className = 'badge failed';
+      badge.textContent = '⚠ Failed';
+      showAlert('error', '❌ Failed to send to ' + esc(parsedRows[i].name) + ': ' + esc(res?.message || 'Unknown error'));
+    }
+  } catch(e) {
+    btn.textContent = '❌ Retry';
+    btn.disabled    = false;
+    showAlert('error', '❌ Error: ' + e.message);
+  }
+}
 
 async function sendAll() {
   const btn = document.getElementById('sendBtn');
