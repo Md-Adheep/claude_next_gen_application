@@ -26,6 +26,109 @@ if ($act === 'template') {
     exit;
 }
 
+/* ── SHARED: process one row → bulk_cert_records + email ─── */
+function processBulkRow(array $row, PDO $pdo, array $globals, string $batchId, int $issuedBy): array {
+    if (!empty($row['_error']) || !empty($row['_sent'])) {
+        return ['name' => $row['name'] ?? '', 'email' => $row['email'] ?? '',
+                'status' => 'skipped', 'message' => $row['_error'] ?? 'Already sent'];
+    }
+    $name  = trim($row['name']  ?? '');
+    $email = strtolower(trim($row['email'] ?? ''));
+    if (!$name || !$email) return ['name' => $name, 'email' => $email, 'status' => 'skipped', 'message' => 'Missing name or email'];
+
+    $resolvedCourse   = ($row['course_name']   ?? '') ?: ($globals['course']    ?: 'General Training');
+    $resolvedGrade    = ($row['grade']          ?? '') ?: ($globals['grade']     ?: 'Pass');
+    $resolvedDate     = ($row['issue_date']     ?? '') ?: ($globals['date']      ?: date('Y-m-d'));
+    $resolvedOrg      = ($row['org_name']       ?? '') ?: ($globals['org']       ?: 'NextGen Technologies');
+    $resolvedDirector = ($row['director_name']  ?? '') ?: ($globals['director']  ?: 'Director');
+    $resolvedCertType = ($row['cert_type']      ?? '') ?: ($globals['cert_type'] ?: 'Certificate of Completion');
+    $rd = date_create($resolvedDate);
+    $resolvedDate = $rd ? date_format($rd, 'Y-m-d') : date('Y-m-d');
+
+    try {
+        $dup = $pdo->prepare('SELECT id FROM bulk_cert_records WHERE student_email=? AND course_name=? AND batch_id=? LIMIT 1');
+        $dup->execute([$email, $resolvedCourse, $batchId]);
+        if ($dup->fetch()) {
+            return ['name' => $name, 'email' => $email, 'status' => 'skipped', 'message' => 'Already sent in this batch'];
+        }
+        $pdo->prepare(
+            'INSERT INTO bulk_cert_records
+             (batch_id,student_name,student_email,course_name,grade,issue_date,organisation,director_name,cert_type,issued_by)
+             VALUES (?,?,?,?,?,?,?,?,?,?)'
+        )->execute([$batchId, $name, $email, $resolvedCourse, $resolvedGrade, $resolvedDate,
+                    $resolvedOrg, $resolvedDirector, $resolvedCertType, $issuedBy]);
+        $recId    = $pdo->lastInsertId();
+        $certCode = 'BC-' . str_pad($recId, 6, '0', STR_PAD_LEFT);
+        $pdo->prepare('UPDATE bulk_cert_records SET cert_code=? WHERE id=?')->execute([$certCode, $recId]);
+
+        $issueDate   = date('d M Y', strtotime($resolvedDate));
+        $studentName = htmlspecialchars($name);
+        $courseName  = htmlspecialchars($resolvedCourse);
+        $grade       = htmlspecialchars($resolvedGrade);
+        $org         = htmlspecialchars($resolvedOrg);
+        $director    = htmlspecialchars($resolvedDirector);
+        $ctype       = htmlspecialchars($resolvedCertType);
+
+        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#F4F0FB;font-family:Georgia,serif;">
+<div style="max-width:640px;margin:30px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.12);">
+  <div style="background:linear-gradient(135deg,#7C3AED,#8B5CF6);padding:28px 36px;text-align:center;">
+    <div style="font-size:36px;margin-bottom:8px;">🎓</div>
+    <div style="color:#fff;font-family:sans-serif;font-size:13px;letter-spacing:.15em;text-transform:uppercase;opacity:.85;">' . $org . '</div>
+    <div style="color:#fff;font-family:sans-serif;font-size:22px;font-weight:700;margin-top:4px;">Certificate Issued</div>
+  </div>
+  <div style="padding:30px 36px 10px;">
+    <p style="font-family:sans-serif;font-size:15px;color:#374151;">Dear <strong>' . $studentName . '</strong>,</p>
+    <p style="font-family:sans-serif;font-size:14px;color:#6B7280;line-height:1.7;margin-top:8px;">Congratulations! You have successfully completed the training program. Your certificate is detailed below.</p>
+  </div>
+  <div style="margin:16px 36px 24px;background:linear-gradient(135deg,#fffdf0,#fff9e6);border:3px solid #D97706;border-radius:14px;padding:30px 36px;text-align:center;">
+    <div style="font-size:28px;margin-bottom:6px;">🏆</div>
+    <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#92400E;font-family:sans-serif;font-weight:700;margin-bottom:14px;">' . $org . '</div>
+    <div style="font-size:26px;font-weight:700;color:#B45309;font-family:Georgia,serif;">Certificate</div>
+    <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#AAA;font-family:sans-serif;margin-bottom:16px;">' . $ctype . '</div>
+    <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,#D97706,transparent);margin:0 auto 14px;"></div>
+    <div style="font-size:11px;color:#6B7280;font-family:sans-serif;margin-bottom:6px;">This is to certify that</div>
+    <div style="font-size:28px;font-style:italic;color:#1C1917;font-weight:700;border-bottom:2px solid #D97706;padding-bottom:8px;display:inline-block;margin-bottom:12px;">' . $studentName . '</div>
+    <div style="font-size:12px;color:#6B7280;font-family:sans-serif;margin-bottom:8px;">has successfully completed</div>
+    <div style="font-size:16px;font-weight:700;color:#92400E;margin-bottom:4px;font-family:sans-serif;">' . $courseName . '</div>
+    <div style="font-size:11px;color:#9CA3AF;font-family:sans-serif;margin-bottom:20px;">with ' . $grade . '</div>
+    <div style="display:flex;justify-content:space-between;padding-top:16px;border-top:1px solid rgba(217,119,6,.25);">
+      <div style="text-align:center;">
+        <div style="width:70px;height:1px;background:#9CA3AF;margin:0 auto 4px;"></div>
+        <div style="font-size:9.5px;font-weight:700;color:#374151;font-family:sans-serif;">' . $director . '</div>
+        <div style="font-size:9px;color:#9CA3AF;font-family:sans-serif;">' . $org . '</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:9.5px;color:#9CA3AF;font-family:sans-serif;">' . $issueDate . '</div>
+        <div style="width:70px;height:1px;background:#9CA3AF;margin:6px auto 4px;"></div>
+        <div style="font-size:9.5px;font-weight:700;color:#374151;font-family:sans-serif;">Head of Training</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;font-size:9px;color:#D1D5DB;font-family:monospace;">' . $certCode . '</div>
+  </div>
+  <div style="background:#F9FAFB;padding:20px 36px;text-align:center;border-top:1px solid #E5E7EB;">
+    <p style="font-family:sans-serif;font-size:12px;color:#9CA3AF;line-height:1.7;margin:0;">
+      Certificate ID: <code>' . $certCode . '</code> | Issued: ' . $issueDate . '<br>
+      Issued by <strong>' . $org . '</strong>
+    </p>
+  </div>
+</div></body></html>';
+
+        $subject = "Your Certificate — {$resolvedCourse} | {$resolvedOrg}";
+        $result  = sendMail($email, $name, $subject, $html);
+        if ($result['ok']) {
+            $pdo->prepare('UPDATE bulk_cert_records SET delivery_status="Sent", sent_at=NOW() WHERE id=?')->execute([$recId]);
+            logAct($issuedBy, 'BULK_CERT_SENT', "bc:{$recId} to:{$email}");
+            return ['name' => $name, 'email' => $email, 'status' => 'sent', 'cert_code' => $certCode, 'message' => 'Sent successfully'];
+        } else {
+            $pdo->prepare('UPDATE bulk_cert_records SET delivery_status="Failed" WHERE id=?')->execute([$recId]);
+            return ['name' => $name, 'email' => $email, 'status' => 'failed', 'message' => $result['error']];
+        }
+    } catch (Throwable $e) {
+        return ['name' => $name, 'email' => $email, 'status' => 'failed', 'message' => $e->getMessage()];
+    }
+}
+
 /* ── UPLOAD & PARSE ──────────────────────────────────────── */
 if ($act === 'upload') {
     if (!isset($_FILES['excel_file']) || $_FILES['excel_file']['error'] !== UPLOAD_ERR_OK) {
@@ -165,117 +268,6 @@ if ($act === 'upload') {
     startSess();
     $_SESSION['bulk_cert_rows'] = $normalized;
     ok(['rows' => $normalized, 'count' => count($normalized)], count($normalized) . ' records parsed successfully.');
-}
-
-/* ── SHARED: process one row into bulk_cert_records + send email ── */
-function processBulkRow(array $row, PDO $pdo, array $globals, string $batchId, int $issuedBy): array {
-    if (!empty($row['_error']) || !empty($row['_sent'])) {
-        return ['name' => $row['name'] ?? '', 'email' => $row['email'] ?? '',
-                'status' => 'skipped', 'message' => $row['_error'] ?? 'Already sent'];
-    }
-
-    $name  = trim($row['name']  ?? '');
-    $email = strtolower(trim($row['email'] ?? ''));
-    if (!$name || !$email) return ['name' => $name, 'email' => $email, 'status' => 'skipped', 'message' => 'Missing name or email'];
-
-    $resolvedCourse   = ($row['course_name']    ?? '') ?: ($globals['course']    ?: 'General Training');
-    $resolvedGrade    = ($row['grade']           ?? '') ?: ($globals['grade']     ?: 'Pass');
-    $resolvedDate     = ($row['issue_date']      ?? '') ?: ($globals['date']      ?: date('Y-m-d'));
-    $resolvedOrg      = ($row['org_name']        ?? '') ?: ($globals['org']       ?: 'NextGen Technologies');
-    $resolvedDirector = ($row['director_name']   ?? '') ?: ($globals['director']  ?: 'Director');
-    $resolvedCertType = ($row['cert_type']       ?? '') ?: ($globals['cert_type'] ?: 'Certificate of Completion');
-    $rd = date_create($resolvedDate);
-    $resolvedDate = $rd ? date_format($rd, 'Y-m-d') : date('Y-m-d');
-
-    try {
-        // Check duplicate in bulk_cert_records only (no students/courses/certificates touched)
-        $dup = $pdo->prepare('SELECT id FROM bulk_cert_records WHERE student_email=? AND course_name=? AND batch_id=? LIMIT 1');
-        $dup->execute([$email, $resolvedCourse, $batchId]);
-        if ($dup->fetch()) {
-            return ['name' => $name, 'email' => $email, 'status' => 'skipped', 'message' => 'Already sent in this batch'];
-        }
-
-        // Insert into bulk_cert_records
-        $pdo->prepare(
-            'INSERT INTO bulk_cert_records
-             (batch_id,student_name,student_email,course_name,grade,issue_date,organisation,director_name,cert_type,issued_by)
-             VALUES (?,?,?,?,?,?,?,?,?,?)'
-        )->execute([$batchId, $name, $email, $resolvedCourse, $resolvedGrade, $resolvedDate,
-                    $resolvedOrg, $resolvedDirector, $resolvedCertType, $issuedBy]);
-        $recId   = $pdo->lastInsertId();
-        $certCode = 'BC-' . str_pad($recId, 6, '0', STR_PAD_LEFT);
-        $pdo->prepare('UPDATE bulk_cert_records SET cert_code=? WHERE id=?')->execute([$certCode, $recId]);
-
-        // Build email HTML
-        $issueDate   = date('d M Y', strtotime($resolvedDate));
-        $studentName = htmlspecialchars($name);
-        $courseName  = htmlspecialchars($resolvedCourse);
-        $grade       = htmlspecialchars($resolvedGrade);
-        $org         = htmlspecialchars($resolvedOrg);
-        $director    = htmlspecialchars($resolvedDirector);
-        $ctype       = htmlspecialchars($resolvedCertType);
-
-        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#F4F0FB;font-family:Georgia,serif;">
-<div style="max-width:640px;margin:30px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.12);">
-  <div style="background:linear-gradient(135deg,#7C3AED,#8B5CF6);padding:28px 36px;text-align:center;">
-    <div style="font-size:36px;margin-bottom:8px;">🎓</div>
-    <div style="color:#fff;font-family:sans-serif;font-size:13px;letter-spacing:.15em;text-transform:uppercase;opacity:.85;">' . $org . '</div>
-    <div style="color:#fff;font-family:sans-serif;font-size:22px;font-weight:700;margin-top:4px;">Certificate Issued</div>
-  </div>
-  <div style="padding:30px 36px 10px;">
-    <p style="font-family:sans-serif;font-size:15px;color:#374151;">Dear <strong>' . $studentName . '</strong>,</p>
-    <p style="font-family:sans-serif;font-size:14px;color:#6B7280;line-height:1.7;margin-top:8px;">
-      Congratulations! You have successfully completed the training program. Your certificate is detailed below.
-    </p>
-  </div>
-  <div style="margin:16px 36px 24px;background:linear-gradient(135deg,#fffdf0,#fff9e6);border:3px solid #D97706;border-radius:14px;padding:30px 36px;text-align:center;">
-    <div style="font-size:28px;margin-bottom:6px;">🏆</div>
-    <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#92400E;font-family:sans-serif;font-weight:700;margin-bottom:14px;">' . $org . '</div>
-    <div style="font-size:26px;font-weight:700;color:#B45309;font-family:Georgia,serif;">Certificate</div>
-    <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#AAA;font-family:sans-serif;margin-bottom:16px;">' . $ctype . '</div>
-    <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,#D97706,transparent);margin:0 auto 14px;"></div>
-    <div style="font-size:11px;color:#6B7280;font-family:sans-serif;margin-bottom:6px;">This is to certify that</div>
-    <div style="font-size:28px;font-style:italic;color:#1C1917;font-weight:700;border-bottom:2px solid #D97706;padding-bottom:8px;display:inline-block;margin-bottom:12px;">' . $studentName . '</div>
-    <div style="font-size:12px;color:#6B7280;font-family:sans-serif;margin-bottom:8px;">has successfully completed</div>
-    <div style="font-size:16px;font-weight:700;color:#92400E;margin-bottom:4px;font-family:sans-serif;">' . $courseName . '</div>
-    <div style="font-size:11px;color:#9CA3AF;font-family:sans-serif;margin-bottom:20px;">with ' . $grade . '</div>
-    <div style="display:flex;justify-content:space-between;padding-top:16px;border-top:1px solid rgba(217,119,6,.25);">
-      <div style="text-align:center;">
-        <div style="width:70px;height:1px;background:#9CA3AF;margin:0 auto 4px;"></div>
-        <div style="font-size:9.5px;font-weight:700;color:#374151;font-family:sans-serif;">' . $director . '</div>
-        <div style="font-size:9px;color:#9CA3AF;font-family:sans-serif;">' . $org . '</div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-size:9.5px;color:#9CA3AF;font-family:sans-serif;">' . $issueDate . '</div>
-        <div style="width:70px;height:1px;background:#9CA3AF;margin:6px auto 4px;"></div>
-        <div style="font-size:9.5px;font-weight:700;color:#374151;font-family:sans-serif;">Head of Training</div>
-      </div>
-    </div>
-    <div style="margin-top:12px;font-size:9px;color:#D1D5DB;font-family:monospace;">' . $certCode . '</div>
-  </div>
-  <div style="background:#F9FAFB;padding:20px 36px;text-align:center;border-top:1px solid #E5E7EB;">
-    <p style="font-family:sans-serif;font-size:12px;color:#9CA3AF;line-height:1.7;margin:0;">
-      Certificate ID: <code>' . $certCode . '</code> | Issued: ' . $issueDate . '<br>
-      Issued by <strong>' . $org . '</strong>
-    </p>
-  </div>
-</div></body></html>';
-
-        $subject = "Your Certificate — {$resolvedCourse} | {$resolvedOrg}";
-        $result  = sendMail($email, $name, $subject, $html);
-
-        if ($result['ok']) {
-            $pdo->prepare('UPDATE bulk_cert_records SET delivery_status="Sent", sent_at=NOW() WHERE id=?')->execute([$recId]);
-            logAct($issuedBy, 'BULK_CERT_SENT', "bc:{$recId} to:{$email}");
-            return ['name' => $name, 'email' => $email, 'status' => 'sent', 'cert_code' => $certCode, 'message' => 'Sent successfully'];
-        } else {
-            $pdo->prepare('UPDATE bulk_cert_records SET delivery_status="Failed" WHERE id=?')->execute([$recId]);
-            return ['name' => $name, 'email' => $email, 'status' => 'failed', 'message' => $result['error']];
-        }
-    } catch (Throwable $e) {
-        return ['name' => $name, 'email' => $email, 'status' => 'failed', 'message' => $e->getMessage()];
-    }
 }
 
 /* ── SEND ALL ─────────────────────────────────────────────── */
