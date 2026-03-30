@@ -33,8 +33,34 @@ $pusher  = $payload['pusher'] ?? 'unknown';
 
 writeLog('DEPLOY_START', "Branch: $branch | Commit: $commit | By: $pusher");
 
-// ── Run git pull ─────────────────────────────────────────────
-$projectDir = escapeshellarg(dirname(__DIR__));  // repo root, one level above httpdocs
+// ── Find git root ─────────────────────────────────────────────
+$candidates = [
+    __DIR__,                          // httpdocs/
+    dirname(__DIR__),                  // one level up
+    dirname(dirname(__DIR__)),         // two levels up
+];
+
+$gitRoot = null;
+foreach ($candidates as $path) {
+    if (is_dir($path . '/.git')) {
+        $gitRoot = $path;
+        break;
+    }
+}
+
+if (!$gitRoot) {
+    $checked = implode(', ', $candidates);
+    writeLog('ERROR', "No .git directory found. Checked: $checked");
+    http_response_code(500);
+    die(json_encode([
+        'success' => false,
+        'error'   => 'No .git directory found',
+        'checked' => $candidates,
+    ]));
+}
+
+writeLog('INFO', "Git root found: $gitRoot");
+$projectDir = escapeshellarg($gitRoot);
 
 $commands = [
     "cd {$projectDir} && git fetch origin 2>&1",
