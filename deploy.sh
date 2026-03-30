@@ -59,7 +59,8 @@ else
   git log origin/main..HEAD --oneline
 fi
 
-echo -e "${BLUE}[3/3] Pushing to GitHub (main)...${NC}"
+echo -e "${BLUE}[3/3] Syncing with remote and pushing...${NC}"
+git pull --rebase origin main
 git push origin main
 
 echo -e "\n${GREEN}✓ Pushed to GitHub!${NC}"
