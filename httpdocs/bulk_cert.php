@@ -111,12 +111,13 @@ if ($act === 'upload') {
         $map  = [];
         foreach ($keys as $k) {
             $kl = strtolower(trim($k));
-            if (in_array($kl, ['name','full name','student name','full_name','student_name'])) $map['name'] = $r[$k];
-            elseif (in_array($kl, ['email','email address','e-mail'])) $map['email'] = $r[$k];
-            elseif (in_array($kl, ['course','course name','course_name','program'])) $map['course_name'] = $r[$k];
-            elseif (in_array($kl, ['grade','result','mark'])) $map['grade'] = $r[$k];
-            elseif (in_array($kl, ['issue_date','date','issue date','issued_on'])) $map['issue_date'] = $r[$k];
-            else $map[$kl] = $r[$k];
+            if (in_array($kl, ['name','full name','student name','full_name','student_name','name of the student','name of student'])) $map['name'] = $r[$k];
+            elseif (in_array($kl, ['email','email address','e-mail','email id','e-mail id','emailid','mail id','mail'])) $map['email'] = $r[$k];
+            elseif (in_array($kl, ['course','course name','course_name','program','workshop','subject'])) $map['course_name'] = $r[$k];
+            elseif (in_array($kl, ['grade','result','mark','marks','score'])) $map['grade'] = $r[$k];
+            elseif (in_array($kl, ['issue_date','date','issue date','issued_on','certificate date'])) $map['issue_date'] = $r[$k];
+            elseif (in_array($kl, ['register number','register no','reg no','regno','roll no','roll number','reg_no','register_number','registration number'])) $map['reg_no'] = $r[$k];
+            // skip s.no, phone number — not needed for certificate
         }
         // Validate required
         if (empty($map['name']) || empty($map['email'])) continue;
@@ -149,10 +150,13 @@ elseif ($act === 'send_all') {
     $rows = $_SESSION['bulk_cert_rows'] ?? [];
     if (empty($rows)) fail('No data in session. Upload file again.');
 
-    $b           = body();
-    $orgName     = clean($b['organisation']  ?? 'NextGen Technologies');
-    $directorName= clean($b['director_name'] ?? 'Director');
-    $certType    = clean($b['cert_type']     ?? 'Certificate of Completion');
+    $b            = body();
+    $orgName      = clean($b['organisation']  ?? 'NextGen Technologies');
+    $directorName = clean($b['director_name'] ?? 'Director');
+    $certType     = clean($b['cert_type']     ?? 'Certificate of Completion');
+    $globalCourse = clean($b['course_name']   ?? '');
+    $globalGrade  = clean($b['grade']         ?? '');
+    $globalDate   = clean($b['issue_date']    ?? '');
 
     $results = [];
     foreach ($rows as $row) {
@@ -161,12 +165,19 @@ elseif ($act === 'send_all') {
             continue;
         }
         try {
+            // Resolve course/grade/date: row value → global setting → default
+            $resolvedCourse = $row['course_name'] ?: ($globalCourse ?: 'General Training');
+            $resolvedGrade  = $row['grade']        ?: ($globalGrade  ?: 'Pass');
+            $resolvedDate   = $row['issue_date']   ?: ($globalDate   ?: date('Y-m-d'));
+            $rd = date_create($resolvedDate);
+            $resolvedDate   = $rd ? date_format($rd, 'Y-m-d') : date('Y-m-d');
+
             // 1. Get or create course
             $cs = $pdo->prepare('SELECT id FROM courses WHERE name = ? LIMIT 1');
-            $cs->execute([$row['course_name']]);
+            $cs->execute([$resolvedCourse]);
             $course = $cs->fetch();
             if (!$course) {
-                $pdo->prepare('INSERT INTO courses (name, status) VALUES (?, "Active")')->execute([$row['course_name']]);
+                $pdo->prepare('INSERT INTO courses (name, status) VALUES (?, "Active")')->execute([$resolvedCourse]);
                 $courseId = $pdo->lastInsertId();
             } else {
                 $courseId = $course['id'];
@@ -200,15 +211,15 @@ elseif ($act === 'send_all') {
             $pdo->prepare(
                 'INSERT INTO certificates (student_id,course_id,cert_type,grade,issue_date,organisation,director_name,issued_by,delivery_status)
                  VALUES (?,?,?,?,?,?,?,?,"Pending")'
-            )->execute([$studentId, $courseId, $certType, $row['grade'], $row['issue_date'], $orgName, $directorName, $admin['id']]);
+            )->execute([$studentId, $courseId, $certType, $resolvedGrade, $resolvedDate, $orgName, $directorName, $admin['id']]);
             $certId   = $pdo->lastInsertId();
             $certCode = 'CERT-' . str_pad($certId, 6, '0', STR_PAD_LEFT);
 
             // 5. Build & send email
-            $issueDate   = date('d M Y', strtotime($row['issue_date']));
+            $issueDate   = date('d M Y', strtotime($resolvedDate));
             $studentName = htmlspecialchars($row['name']);
-            $courseName  = htmlspecialchars($row['course_name']);
-            $grade       = htmlspecialchars($row['grade']);
+            $courseName  = htmlspecialchars($resolvedCourse);
+            $grade       = htmlspecialchars($resolvedGrade);
 
             $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#F4F0FB;font-family:Georgia,serif;">

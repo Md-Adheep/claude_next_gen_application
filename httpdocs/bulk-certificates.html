@@ -220,6 +220,20 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
               <option>Certificate of Excellence</option>
             </select>
           </div>
+          <div class="fg-row">
+            <div class="fg">
+              <label>Course / Workshop Name <span style="color:var(--text3);font-weight:400;">(applies to all rows without a course column)</span></label>
+              <input type="text" id="cfg_course" placeholder="e.g. Web Development Workshop">
+            </div>
+            <div class="fg">
+              <label>Grade / Result <span style="color:var(--text3);font-weight:400;">(default if not in file)</span></label>
+              <input type="text" id="cfg_grade" placeholder="e.g. Pass, Distinction">
+            </div>
+          </div>
+          <div class="fg">
+            <label>Issue Date <span style="color:var(--text3);font-weight:400;">(default if not in file)</span></label>
+            <input type="date" id="cfg_issue_date">
+          </div>
         </div>
       </div>
 
@@ -290,6 +304,9 @@ function logout() {
 function initials(name) {
   return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 }
+
+// Set today as default issue date
+document.getElementById('cfg_issue_date').valueAsDate = new Date();
 
 (async () => {
   try {
@@ -366,7 +383,10 @@ async function sendAll() {
       body: JSON.stringify({
         organisation:  document.getElementById('cfg_org').value.trim(),
         director_name: document.getElementById('cfg_director').value.trim(),
-        cert_type:     document.getElementById('cfg_type').value
+        cert_type:     document.getElementById('cfg_type').value,
+        course_name:   document.getElementById('cfg_course').value.trim(),
+        grade:         document.getElementById('cfg_grade').value.trim(),
+        issue_date:    document.getElementById('cfg_issue_date').value
       })
     });
     const j = await r.json();
