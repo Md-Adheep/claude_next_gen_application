@@ -1,0 +1,286 @@
+<?php
+// ============================================================
+//  bulk_cert.php — Excel/CSV Bulk Certificate Sender
+//  POST ?action=upload   — upload & preview Excel/CSV
+//  POST ?action=send_all — generate + email all from session
+//  GET  ?action=template — download sample CSV
+// ============================================================
+
+require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/mailer.php';
+cors();
+
+$admin = needAdmin();
+$act   = $_GET['action'] ?? '';
+$pdo   = db();
+
+/* ── TEMPLATE DOWNLOAD ───────────────────────────────────── */
+if ($act === 'template') {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="certificate_template.csv"');
+    echo "\xEF\xBB\xBF"; // UTF-8 BOM for Excel
+    echo "name,email,course_name,grade,issue_date\n";
+    echo "John Doe,john@example.com,Web Development,Distinction,2026-03-28\n";
+    echo "Jane Smith,jane@example.com,Data Science,Pass,2026-03-28\n";
+    exit;
+}
+
+/* ── UPLOAD & PARSE ──────────────────────────────────────── */
+if ($act === 'upload') {
+    if (!isset($_FILES['excel_file']) || $_FILES['excel_file']['error'] !== UPLOAD_ERR_OK) {
+        $errCode = $_FILES['excel_file']['error'] ?? -1;
+        fail('File upload failed (error code: ' . $errCode . '). Check PHP upload_max_filesize setting.');
+    }
+    $file = $_FILES['excel_file'];
+    $ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $allowed  = ['csv', 'xlsx'];
+    if (!in_array($ext, $allowed)) fail('Only CSV and XLSX files are supported. XLS (old format) is not supported.');
+    if ($file['size'] > 5 * 1024 * 1024) fail('File too large. Max 5MB.');
+
+    $rows = [];
+    if ($ext === 'csv') {
+        $handle = fopen($file['tmp_name'], 'r');
+        $header = null;
+        while (($line = fgetcsv($handle)) !== false) {
+            if (!$header) { $header = array_map('trim', $line); continue; }
+            if (count($line) < 2) continue;
+            $rows[] = array_combine($header, array_pad($line, count($header), ''));
+        }
+        fclose($handle);
+    } elseif ($ext === 'xlsx') {
+        // Parse XLSX manually (read zip → xl/worksheets/sheet1.xml)
+        $zip = new ZipArchive();
+        if ($zip->open($file['tmp_name']) !== true) fail('Cannot open XLSX file.');
+        $sharedStrings = [];
+        $ssXml = $zip->getFromName('xl/sharedStrings.xml');
+        if ($ssXml) {
+            $ss = simplexml_load_string($ssXml);
+            foreach ($ss->si as $si) {
+                $t = '';
+                foreach ($si->r ?? [$si] as $r) {
+                    $t .= (string)($r->t ?? '');
+                }
+                if (!$si->r) $t = (string)$si->t;
+                $sharedStrings[] = $t;
+            }
+        }
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+        if (!$sheetXml) fail('Cannot read sheet data from XLSX.');
+        $sheet  = simplexml_load_string($sheetXml);
+        $header = null;
+        foreach ($sheet->sheetData->row as $row) {
+            $rowData = [];
+            foreach ($row->c as $cell) {
+                // Get column index from cell reference (e.g. "B3" → col 1)
+                preg_match('/^([A-Z]+)/', (string)($cell['r'] ?? ''), $m);
+                $colStr = $m[1] ?? '';
+                $colIdx = 0;
+                foreach (str_split($colStr) as $ch) {
+                    $colIdx = $colIdx * 26 + (ord($ch) - 64);
+                }
+                $colIdx--; // 0-based
+
+                $t   = (string)($cell['t'] ?? '');
+                $val = (string)$cell->v;
+                if ($t === 's') $val = $sharedStrings[(int)$val] ?? '';
+                elseif ($t === 'inlineStr') $val = (string)($cell->is->t ?? '');
+                $rowData[$colIdx] = trim($val);
+            }
+            if (!$header) {
+                ksort($rowData);
+                $header = array_values($rowData);
+                continue;
+            }
+            if (count(array_filter($rowData)) === 0) continue;
+            $combined = [];
+            foreach ($header as $i => $h) {
+                $combined[trim(strtolower($h))] = $rowData[$i] ?? '';
+            }
+            $rows[] = $combined;
+        }
+    }
+
+    if (empty($rows)) fail('No data found in file. Check the format.');
+
+    // Normalize column names
+    $normalized = [];
+    foreach ($rows as $r) {
+        $keys = array_keys($r);
+        $map  = [];
+        foreach ($keys as $k) {
+            $kl = strtolower(trim($k));
+            if (in_array($kl, ['name','full name','student name','full_name','student_name'])) $map['name'] = $r[$k];
+            elseif (in_array($kl, ['email','email address','e-mail'])) $map['email'] = $r[$k];
+            elseif (in_array($kl, ['course','course name','course_name','program'])) $map['course_name'] = $r[$k];
+            elseif (in_array($kl, ['grade','result','mark'])) $map['grade'] = $r[$k];
+            elseif (in_array($kl, ['issue_date','date','issue date','issued_on'])) $map['issue_date'] = $r[$k];
+            else $map[$kl] = $r[$k];
+        }
+        // Validate required
+        if (empty($map['name']) || empty($map['email'])) continue;
+        if (!filter_var(trim($map['email']), FILTER_VALIDATE_EMAIL)) {
+            $map['_error'] = 'Invalid email: ' . $map['email'];
+        }
+        $map['name']       = trim($map['name'] ?? '');
+        $map['email']      = strtolower(trim($map['email'] ?? ''));
+        $map['course_name']= trim($map['course_name'] ?? 'General Training');
+        $map['grade']      = trim($map['grade'] ?? 'Pass');
+        $map['issue_date'] = trim($map['issue_date'] ?? date('Y-m-d'));
+
+        // Validate/format date
+        $d = date_create($map['issue_date']);
+        $map['issue_date'] = $d ? date_format($d, 'Y-m-d') : date('Y-m-d');
+
+        $normalized[] = $map;
+    }
+
+    if (empty($normalized)) fail('No valid rows found. Ensure name and email columns exist.');
+
+    startSess();
+    $_SESSION['bulk_cert_rows'] = $normalized;
+    ok(['rows' => $normalized, 'count' => count($normalized)], count($normalized) . ' records parsed successfully.');
+}
+
+/* ── SEND ALL ─────────────────────────────────────────────── */
+elseif ($act === 'send_all') {
+    startSess();
+    $rows = $_SESSION['bulk_cert_rows'] ?? [];
+    if (empty($rows)) fail('No data in session. Upload file again.');
+
+    $b           = body();
+    $orgName     = clean($b['organisation']  ?? 'NextGen Technologies');
+    $directorName= clean($b['director_name'] ?? 'Director');
+    $certType    = clean($b['cert_type']     ?? 'Certificate of Completion');
+
+    $results = [];
+    foreach ($rows as $row) {
+        if (!empty($row['_error'])) {
+            $results[] = ['name' => $row['name'], 'email' => $row['email'], 'status' => 'skipped', 'message' => $row['_error']];
+            continue;
+        }
+        try {
+            // 1. Get or create course
+            $cs = $pdo->prepare('SELECT id FROM courses WHERE name = ? LIMIT 1');
+            $cs->execute([$row['course_name']]);
+            $course = $cs->fetch();
+            if (!$course) {
+                $pdo->prepare('INSERT INTO courses (name, status) VALUES (?, "Active")')->execute([$row['course_name']]);
+                $courseId = $pdo->lastInsertId();
+            } else {
+                $courseId = $course['id'];
+            }
+
+            // 2. Get or create student
+            $parts     = explode(' ', trim($row['name']), 2);
+            $firstName = $parts[0];
+            $lastName  = $parts[1] ?? '';
+            $ss = $pdo->prepare('SELECT id FROM students WHERE email = ? LIMIT 1');
+            $ss->execute([$row['email']]);
+            $student = $ss->fetch();
+            if (!$student) {
+                $pdo->prepare(
+                    'INSERT INTO students (first_name, last_name, email, status) VALUES (?, ?, ?, "Approved")'
+                )->execute([$firstName, $lastName, $row['email']]);
+                $studentId = $pdo->lastInsertId();
+            } else {
+                $studentId = $student['id'];
+            }
+
+            // 3. Check duplicate cert
+            $dup = $pdo->prepare('SELECT id FROM certificates WHERE student_id=? AND course_id=? LIMIT 1');
+            $dup->execute([$studentId, $courseId]);
+            if ($dup->fetch()) {
+                $results[] = ['name' => $row['name'], 'email' => $row['email'], 'status' => 'skipped', 'message' => 'Certificate already exists'];
+                continue;
+            }
+
+            // 4. Insert certificate
+            $pdo->prepare(
+                'INSERT INTO certificates (student_id,course_id,cert_type,grade,issue_date,organisation,director_name,issued_by,delivery_status)
+                 VALUES (?,?,?,?,?,?,?,?,"Pending")'
+            )->execute([$studentId, $courseId, $certType, $row['grade'], $row['issue_date'], $orgName, $directorName, $admin['id']]);
+            $certId   = $pdo->lastInsertId();
+            $certCode = 'CERT-' . str_pad($certId, 6, '0', STR_PAD_LEFT);
+
+            // 5. Build & send email
+            $issueDate   = date('d M Y', strtotime($row['issue_date']));
+            $studentName = htmlspecialchars($row['name']);
+            $courseName  = htmlspecialchars($row['course_name']);
+            $grade       = htmlspecialchars($row['grade']);
+
+            $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#F4F0FB;font-family:Georgia,serif;">
+<div style="max-width:640px;margin:30px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.12);">
+  <div style="background:linear-gradient(135deg,#7C3AED,#8B5CF6);padding:28px 36px;text-align:center;">
+    <div style="font-size:36px;margin-bottom:8px;">🎓</div>
+    <div style="color:#fff;font-family:sans-serif;font-size:13px;letter-spacing:.15em;text-transform:uppercase;opacity:.85;">' . htmlspecialchars($orgName) . '</div>
+    <div style="color:#fff;font-family:sans-serif;font-size:22px;font-weight:700;margin-top:4px;">Certificate Issued</div>
+  </div>
+  <div style="padding:30px 36px 10px;">
+    <p style="font-family:sans-serif;font-size:15px;color:#374151;">Dear <strong>' . $studentName . '</strong>,</p>
+    <p style="font-family:sans-serif;font-size:14px;color:#6B7280;line-height:1.7;margin-top:8px;">
+      Congratulations! You have successfully completed the training program. Your certificate is detailed below.
+    </p>
+  </div>
+  <div style="margin:16px 36px 24px;background:linear-gradient(135deg,#fffdf0,#fff9e6);border:3px solid #D97706;border-radius:14px;padding:30px 36px;text-align:center;">
+    <div style="font-size:28px;margin-bottom:6px;">🏆</div>
+    <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#92400E;font-family:sans-serif;font-weight:700;margin-bottom:14px;">' . htmlspecialchars($orgName) . '</div>
+    <div style="font-size:26px;font-weight:700;color:#B45309;font-family:Georgia,serif;">Certificate</div>
+    <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#AAA;font-family:sans-serif;margin-bottom:16px;">' . htmlspecialchars($certType) . '</div>
+    <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,#D97706,transparent);margin:0 auto 14px;"></div>
+    <div style="font-size:11px;color:#6B7280;font-family:sans-serif;margin-bottom:6px;">This is to certify that</div>
+    <div style="font-size:28px;font-style:italic;color:#1C1917;font-weight:700;border-bottom:2px solid #D97706;padding-bottom:8px;display:inline-block;margin-bottom:12px;">' . $studentName . '</div>
+    <div style="font-size:12px;color:#6B7280;font-family:sans-serif;margin-bottom:8px;">has successfully completed</div>
+    <div style="font-size:16px;font-weight:700;color:#92400E;margin-bottom:4px;font-family:sans-serif;">' . $courseName . '</div>
+    <div style="font-size:11px;color:#9CA3AF;font-family:sans-serif;margin-bottom:20px;">with ' . $grade . '</div>
+    <div style="display:flex;justify-content:space-between;padding-top:16px;border-top:1px solid rgba(217,119,6,.25);">
+      <div style="text-align:center;">
+        <div style="width:70px;height:1px;background:#9CA3AF;margin:0 auto 4px;"></div>
+        <div style="font-size:9.5px;font-weight:700;color:#374151;font-family:sans-serif;">' . htmlspecialchars($directorName) . '</div>
+        <div style="font-size:9px;color:#9CA3AF;font-family:sans-serif;">' . htmlspecialchars($orgName) . '</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:9.5px;color:#9CA3AF;font-family:sans-serif;">' . $issueDate . '</div>
+        <div style="width:70px;height:1px;background:#9CA3AF;margin:6px auto 4px;"></div>
+        <div style="font-size:9.5px;font-weight:700;color:#374151;font-family:sans-serif;">Head of Training</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;font-size:9px;color:#D1D5DB;font-family:monospace;">' . $certCode . '</div>
+  </div>
+  <div style="background:#F9FAFB;padding:20px 36px;text-align:center;border-top:1px solid #E5E7EB;">
+    <p style="font-family:sans-serif;font-size:12px;color:#9CA3AF;line-height:1.7;margin:0;">
+      Certificate ID: <code>' . $certCode . '</code> | Issued: ' . $issueDate . '<br>
+      Issued by <strong>' . htmlspecialchars($orgName) . '</strong>
+    </p>
+  </div>
+</div></body></html>';
+
+            $subject = "Your Certificate — {$row['course_name']} | {$orgName}";
+            $result  = sendMail($row['email'], $row['name'], $subject, $html);
+
+            if ($result['ok']) {
+                $pdo->prepare('UPDATE certificates SET delivery_status="Sent", sent_at=NOW() WHERE id=?')->execute([$certId]);
+                logAct($admin['id'], 'BULK_CERT_SENT', "cert:$certId to:{$row['email']}");
+                $results[] = ['name' => $row['name'], 'email' => $row['email'], 'status' => 'sent', 'cert_code' => $certCode, 'message' => 'Sent successfully'];
+            } else {
+                $pdo->prepare('UPDATE certificates SET delivery_status="Failed" WHERE id=?')->execute([$certId]);
+                $results[] = ['name' => $row['name'], 'email' => $row['email'], 'status' => 'failed', 'message' => $result['error']];
+            }
+        } catch (Throwable $e) {
+            $results[] = ['name' => $row['name'], 'email' => $row['email'] ?? '', 'status' => 'failed', 'message' => $e->getMessage()];
+        }
+    }
+
+    unset($_SESSION['bulk_cert_rows']);
+
+    $sent    = count(array_filter($results, fn($r) => $r['status'] === 'sent'));
+    $failed  = count(array_filter($results, fn($r) => $r['status'] === 'failed'));
+    $skipped = count(array_filter($results, fn($r) => $r['status'] === 'skipped'));
+
+    ok(['results' => $results, 'sent' => $sent, 'failed' => $failed, 'skipped' => $skipped],
+       "$sent sent, $failed failed, $skipped skipped");
+}
+
+else fail('Unknown action.', 404);
