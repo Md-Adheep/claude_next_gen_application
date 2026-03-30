@@ -167,97 +167,60 @@ if ($act === 'upload') {
     ok(['rows' => $normalized, 'count' => count($normalized)], count($normalized) . ' records parsed successfully.');
 }
 
-/* ── SEND ALL ─────────────────────────────────────────────── */
-elseif ($act === 'send_all') {
-    startSess();
-    // Prefer rows from POST body (includes any admin edits), fallback to session
-    $bodyRows = $b['rows'] ?? null;
-    $rows = (!empty($bodyRows) && is_array($bodyRows)) ? $bodyRows : ($_SESSION['bulk_cert_rows'] ?? []);
-    if (empty($rows)) fail('No data found. Upload file again.');
+/* ── SHARED: process one row into bulk_cert_records + send email ── */
+function processBulkRow(array $row, PDO $pdo, array $globals, string $batchId, int $issuedBy): array {
+    if (!empty($row['_error']) || !empty($row['_sent'])) {
+        return ['name' => $row['name'] ?? '', 'email' => $row['email'] ?? '',
+                'status' => 'skipped', 'message' => $row['_error'] ?? 'Already sent'];
+    }
 
-    $b            = body();
-    $orgName      = clean($b['organisation']  ?? 'NextGen Technologies');
-    $directorName = clean($b['director_name'] ?? 'Director');
-    $certType     = clean($b['cert_type']     ?? 'Certificate of Completion');
-    $globalCourse = clean($b['course_name']   ?? '');
-    $globalGrade  = clean($b['grade']         ?? '');
-    $globalDate   = clean($b['issue_date']    ?? '');
+    $name  = trim($row['name']  ?? '');
+    $email = strtolower(trim($row['email'] ?? ''));
+    if (!$name || !$email) return ['name' => $name, 'email' => $email, 'status' => 'skipped', 'message' => 'Missing name or email'];
 
-    $results = [];
-    foreach ($rows as $row) {
-        if (!empty($row['_error'])) {
-            $results[] = ['name' => $row['name'], 'email' => $row['email'], 'status' => 'skipped', 'message' => $row['_error']];
-            continue;
+    $resolvedCourse   = ($row['course_name']    ?? '') ?: ($globals['course']    ?: 'General Training');
+    $resolvedGrade    = ($row['grade']           ?? '') ?: ($globals['grade']     ?: 'Pass');
+    $resolvedDate     = ($row['issue_date']      ?? '') ?: ($globals['date']      ?: date('Y-m-d'));
+    $resolvedOrg      = ($row['org_name']        ?? '') ?: ($globals['org']       ?: 'NextGen Technologies');
+    $resolvedDirector = ($row['director_name']   ?? '') ?: ($globals['director']  ?: 'Director');
+    $resolvedCertType = ($row['cert_type']       ?? '') ?: ($globals['cert_type'] ?: 'Certificate of Completion');
+    $rd = date_create($resolvedDate);
+    $resolvedDate = $rd ? date_format($rd, 'Y-m-d') : date('Y-m-d');
+
+    try {
+        // Check duplicate in bulk_cert_records only (no students/courses/certificates touched)
+        $dup = $pdo->prepare('SELECT id FROM bulk_cert_records WHERE student_email=? AND course_name=? AND batch_id=? LIMIT 1');
+        $dup->execute([$email, $resolvedCourse, $batchId]);
+        if ($dup->fetch()) {
+            return ['name' => $name, 'email' => $email, 'status' => 'skipped', 'message' => 'Already sent in this batch'];
         }
-        try {
-            // Resolve all fields: row value → global setting → default
-            $resolvedCourse   = $row['course_name']    ?: ($globalCourse    ?: 'General Training');
-            $resolvedGrade    = $row['grade']           ?: ($globalGrade     ?: 'Pass');
-            $resolvedDate     = $row['issue_date']      ?: ($globalDate      ?: date('Y-m-d'));
-            $resolvedOrg      = !empty($row['org_name'])      ? clean($row['org_name'])      : $orgName;
-            $resolvedDirector = !empty($row['director_name']) ? clean($row['director_name']) : $directorName;
-            $resolvedCertType = !empty($row['cert_type'])     ? clean($row['cert_type'])     : $certType;
-            $rd = date_create($resolvedDate);
-            $resolvedDate   = $rd ? date_format($rd, 'Y-m-d') : date('Y-m-d');
 
-            // 1. Get or create course
-            $cs = $pdo->prepare('SELECT id FROM courses WHERE name = ? LIMIT 1');
-            $cs->execute([$resolvedCourse]);
-            $course = $cs->fetch();
-            if (!$course) {
-                $pdo->prepare('INSERT INTO courses (name, status) VALUES (?, "Active")')->execute([$resolvedCourse]);
-                $courseId = $pdo->lastInsertId();
-            } else {
-                $courseId = $course['id'];
-            }
+        // Insert into bulk_cert_records
+        $pdo->prepare(
+            'INSERT INTO bulk_cert_records
+             (batch_id,student_name,student_email,course_name,grade,issue_date,organisation,director_name,cert_type,issued_by)
+             VALUES (?,?,?,?,?,?,?,?,?,?)'
+        )->execute([$batchId, $name, $email, $resolvedCourse, $resolvedGrade, $resolvedDate,
+                    $resolvedOrg, $resolvedDirector, $resolvedCertType, $issuedBy]);
+        $recId   = $pdo->lastInsertId();
+        $certCode = 'BC-' . str_pad($recId, 6, '0', STR_PAD_LEFT);
+        $pdo->prepare('UPDATE bulk_cert_records SET cert_code=? WHERE id=?')->execute([$certCode, $recId]);
 
-            // 2. Get or create student
-            $parts     = explode(' ', trim($row['name']), 2);
-            $firstName = $parts[0];
-            $lastName  = $parts[1] ?? '';
-            $ss = $pdo->prepare('SELECT id FROM students WHERE email = ? LIMIT 1');
-            $ss->execute([$row['email']]);
-            $student = $ss->fetch();
-            if (!$student) {
-                $pdo->prepare(
-                    'INSERT INTO students (first_name, last_name, email, status) VALUES (?, ?, ?, "Approved")'
-                )->execute([$firstName, $lastName, $row['email']]);
-                $studentId = $pdo->lastInsertId();
-            } else {
-                $studentId = $student['id'];
-            }
+        // Build email HTML
+        $issueDate   = date('d M Y', strtotime($resolvedDate));
+        $studentName = htmlspecialchars($name);
+        $courseName  = htmlspecialchars($resolvedCourse);
+        $grade       = htmlspecialchars($resolvedGrade);
+        $org         = htmlspecialchars($resolvedOrg);
+        $director    = htmlspecialchars($resolvedDirector);
+        $ctype       = htmlspecialchars($resolvedCertType);
 
-            // 3. Check duplicate cert
-            $dup = $pdo->prepare('SELECT id FROM certificates WHERE student_id=? AND course_id=? LIMIT 1');
-            $dup->execute([$studentId, $courseId]);
-            if ($dup->fetch()) {
-                $results[] = ['name' => $row['name'], 'email' => $row['email'], 'status' => 'skipped', 'message' => 'Certificate already exists'];
-                continue;
-            }
-
-            // 4. Insert certificate
-            $pdo->prepare(
-                'INSERT INTO certificates (student_id,course_id,cert_type,grade,issue_date,organisation,director_name,issued_by,delivery_status)
-                 VALUES (?,?,?,?,?,?,?,?,"Pending")'
-            )->execute([$studentId, $courseId, $resolvedCertType, $resolvedGrade, $resolvedDate, $resolvedOrg, $resolvedDirector, $admin['id']]);
-            $certId   = $pdo->lastInsertId();
-            $certCode = 'CERT-' . str_pad($certId, 6, '0', STR_PAD_LEFT);
-
-            // 5. Build & send email
-            $issueDate   = date('d M Y', strtotime($resolvedDate));
-            $studentName = htmlspecialchars($row['name']);
-            $courseName  = htmlspecialchars($resolvedCourse);
-            $grade       = htmlspecialchars($resolvedGrade);
-            $orgName     = $resolvedOrg;
-            $directorName= $resolvedDirector;
-            $certType    = $resolvedCertType;
-
-            $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#F4F0FB;font-family:Georgia,serif;">
 <div style="max-width:640px;margin:30px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.12);">
   <div style="background:linear-gradient(135deg,#7C3AED,#8B5CF6);padding:28px 36px;text-align:center;">
     <div style="font-size:36px;margin-bottom:8px;">🎓</div>
-    <div style="color:#fff;font-family:sans-serif;font-size:13px;letter-spacing:.15em;text-transform:uppercase;opacity:.85;">' . htmlspecialchars($orgName) . '</div>
+    <div style="color:#fff;font-family:sans-serif;font-size:13px;letter-spacing:.15em;text-transform:uppercase;opacity:.85;">' . $org . '</div>
     <div style="color:#fff;font-family:sans-serif;font-size:22px;font-weight:700;margin-top:4px;">Certificate Issued</div>
   </div>
   <div style="padding:30px 36px 10px;">
@@ -268,9 +231,9 @@ elseif ($act === 'send_all') {
   </div>
   <div style="margin:16px 36px 24px;background:linear-gradient(135deg,#fffdf0,#fff9e6);border:3px solid #D97706;border-radius:14px;padding:30px 36px;text-align:center;">
     <div style="font-size:28px;margin-bottom:6px;">🏆</div>
-    <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#92400E;font-family:sans-serif;font-weight:700;margin-bottom:14px;">' . htmlspecialchars($orgName) . '</div>
+    <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#92400E;font-family:sans-serif;font-weight:700;margin-bottom:14px;">' . $org . '</div>
     <div style="font-size:26px;font-weight:700;color:#B45309;font-family:Georgia,serif;">Certificate</div>
-    <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#AAA;font-family:sans-serif;margin-bottom:16px;">' . htmlspecialchars($certType) . '</div>
+    <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#AAA;font-family:sans-serif;margin-bottom:16px;">' . $ctype . '</div>
     <div style="width:60px;height:2px;background:linear-gradient(90deg,transparent,#D97706,transparent);margin:0 auto 14px;"></div>
     <div style="font-size:11px;color:#6B7280;font-family:sans-serif;margin-bottom:6px;">This is to certify that</div>
     <div style="font-size:28px;font-style:italic;color:#1C1917;font-weight:700;border-bottom:2px solid #D97706;padding-bottom:8px;display:inline-block;margin-bottom:12px;">' . $studentName . '</div>
@@ -280,8 +243,8 @@ elseif ($act === 'send_all') {
     <div style="display:flex;justify-content:space-between;padding-top:16px;border-top:1px solid rgba(217,119,6,.25);">
       <div style="text-align:center;">
         <div style="width:70px;height:1px;background:#9CA3AF;margin:0 auto 4px;"></div>
-        <div style="font-size:9.5px;font-weight:700;color:#374151;font-family:sans-serif;">' . htmlspecialchars($directorName) . '</div>
-        <div style="font-size:9px;color:#9CA3AF;font-family:sans-serif;">' . htmlspecialchars($orgName) . '</div>
+        <div style="font-size:9.5px;font-weight:700;color:#374151;font-family:sans-serif;">' . $director . '</div>
+        <div style="font-size:9px;color:#9CA3AF;font-family:sans-serif;">' . $org . '</div>
       </div>
       <div style="text-align:center;">
         <div style="font-size:9.5px;color:#9CA3AF;font-family:sans-serif;">' . $issueDate . '</div>
@@ -294,25 +257,47 @@ elseif ($act === 'send_all') {
   <div style="background:#F9FAFB;padding:20px 36px;text-align:center;border-top:1px solid #E5E7EB;">
     <p style="font-family:sans-serif;font-size:12px;color:#9CA3AF;line-height:1.7;margin:0;">
       Certificate ID: <code>' . $certCode . '</code> | Issued: ' . $issueDate . '<br>
-      Issued by <strong>' . htmlspecialchars($orgName) . '</strong>
+      Issued by <strong>' . $org . '</strong>
     </p>
   </div>
 </div></body></html>';
 
-            $subject = "Your Certificate — {$resolvedCourse} | {$resolvedOrg}";
-            $result  = sendMail($row['email'], $row['name'], $subject, $html);
+        $subject = "Your Certificate — {$resolvedCourse} | {$resolvedOrg}";
+        $result  = sendMail($email, $name, $subject, $html);
 
-            if ($result['ok']) {
-                $pdo->prepare('UPDATE certificates SET delivery_status="Sent", sent_at=NOW() WHERE id=?')->execute([$certId]);
-                logAct($admin['id'], 'BULK_CERT_SENT', "cert:$certId to:{$row['email']}");
-                $results[] = ['name' => $row['name'], 'email' => $row['email'], 'status' => 'sent', 'cert_code' => $certCode, 'message' => 'Sent successfully'];
-            } else {
-                $pdo->prepare('UPDATE certificates SET delivery_status="Failed" WHERE id=?')->execute([$certId]);
-                $results[] = ['name' => $row['name'], 'email' => $row['email'], 'status' => 'failed', 'message' => $result['error']];
-            }
-        } catch (Throwable $e) {
-            $results[] = ['name' => $row['name'], 'email' => $row['email'] ?? '', 'status' => 'failed', 'message' => $e->getMessage()];
+        if ($result['ok']) {
+            $pdo->prepare('UPDATE bulk_cert_records SET delivery_status="Sent", sent_at=NOW() WHERE id=?')->execute([$recId]);
+            logAct($issuedBy, 'BULK_CERT_SENT', "bc:{$recId} to:{$email}");
+            return ['name' => $name, 'email' => $email, 'status' => 'sent', 'cert_code' => $certCode, 'message' => 'Sent successfully'];
+        } else {
+            $pdo->prepare('UPDATE bulk_cert_records SET delivery_status="Failed" WHERE id=?')->execute([$recId]);
+            return ['name' => $name, 'email' => $email, 'status' => 'failed', 'message' => $result['error']];
         }
+    } catch (Throwable $e) {
+        return ['name' => $name, 'email' => $email, 'status' => 'failed', 'message' => $e->getMessage()];
+    }
+}
+
+/* ── SEND ALL ─────────────────────────────────────────────── */
+elseif ($act === 'send_all') {
+    startSess();
+    $bodyRows = $b['rows'] ?? null;
+    $rows = (!empty($bodyRows) && is_array($bodyRows)) ? $bodyRows : ($_SESSION['bulk_cert_rows'] ?? []);
+    if (empty($rows)) fail('No data found. Upload file again.');
+
+    $globals = [
+        'org'       => clean($b['organisation']  ?? 'NextGen Technologies'),
+        'director'  => clean($b['director_name'] ?? 'Director'),
+        'cert_type' => clean($b['cert_type']     ?? 'Certificate of Completion'),
+        'course'    => clean($b['course_name']   ?? ''),
+        'grade'     => clean($b['grade']         ?? ''),
+        'date'      => clean($b['issue_date']    ?? ''),
+    ];
+    $batchId = 'BATCH-' . date('YmdHis') . '-' . substr(md5(uniqid()), 0, 4);
+
+    $results = [];
+    foreach ($rows as $row) {
+        $results[] = processBulkRow($row, $pdo, $globals, $batchId, $admin['id']);
     }
 
     unset($_SESSION['bulk_cert_rows']);
@@ -323,6 +308,30 @@ elseif ($act === 'send_all') {
 
     ok(['results' => $results, 'sent' => $sent, 'failed' => $failed, 'skipped' => $skipped],
        "$sent sent, $failed failed, $skipped skipped");
+}
+
+/* ── SEND ONE ─────────────────────────────────────────────── */
+elseif ($act === 'send_one') {
+    $row = $b['row'] ?? null;
+    if (empty($row) || !is_array($row)) fail('No row data provided.');
+
+    $globals = [
+        'org'       => clean($b['organisation']  ?? 'NextGen Technologies'),
+        'director'  => clean($b['director_name'] ?? 'Director'),
+        'cert_type' => clean($b['cert_type']     ?? 'Certificate of Completion'),
+        'course'    => clean($b['course_name']   ?? ''),
+        'grade'     => clean($b['grade']         ?? ''),
+        'date'      => clean($b['issue_date']    ?? ''),
+    ];
+    $batchId = 'SINGLE-' . date('YmdHis');
+
+    $result = processBulkRow($row, $pdo, $globals, $batchId, $admin['id']);
+
+    if ($result['status'] === 'sent') {
+        ok(['result' => $result], 'Certificate sent to ' . $result['name']);
+    } else {
+        fail($result['message']);
+    }
 }
 
 else fail('Unknown action.', 404);

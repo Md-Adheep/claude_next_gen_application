@@ -527,7 +527,7 @@ async function sendOne(i) {
   btn.disabled    = true;
 
   try {
-    const r = await fetch('bulk_cert.php?action=send_all', {
+    const r = await fetch('bulk_cert.php?action=send_one', {
       method: 'POST', credentials: 'include',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
@@ -537,12 +537,11 @@ async function sendOne(i) {
         course_name:   document.getElementById('cfg_course').value.trim(),
         grade:         document.getElementById('cfg_grade').value.trim(),
         issue_date:    document.getElementById('cfg_issue_date').value,
-        rows:          [parsedRows[i]]
+        row:           parsedRows[i]
       })
     });
     const j = await r.json();
-    const res = j.data?.results?.[0];
-    if (res?.status === 'sent') {
+    if (j.success) {
       parsedRows[i]._sent = true;
       btn.textContent = '✓ Sent';
       btn.style.cssText = 'color:var(--green);border-color:#D1FAE5;opacity:.6;cursor:default;';
@@ -553,7 +552,7 @@ async function sendOne(i) {
       btn.disabled    = false;
       badge.className = 'badge failed';
       badge.textContent = '⚠ Failed';
-      showAlert('error', '❌ Failed to send to ' + esc(parsedRows[i].name) + ': ' + esc(res?.message || 'Unknown error'));
+      showAlert('error', '❌ ' + esc(parsedRows[i].name) + ': ' + esc(j.message || 'Send failed'));
     }
   } catch(e) {
     btn.textContent = '❌ Retry';
