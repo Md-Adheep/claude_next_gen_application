@@ -91,6 +91,18 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 }
 .sb-single:hover { background:var(--purple-bg); color:var(--purple); }
 .s-icon { font-size:14px; width:16px; text-align:center; }
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:10px 11px 4px;font-weight:700;}
+.sb-link{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:10px;font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .16s;text-decoration:none;margin-bottom:2px;position:relative;}
+.sb-link:hover{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active{background:var(--purple-bg);color:var(--purple);}
+.sb-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:18px;border-radius:0 3px 3px 0;background:var(--purple);}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;}
+.sb-badge.green{background:var(--green);}
+.sidebar-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.user-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple-lt));color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.user-info-text h4{font-size:12px;font-weight:800;color:var(--text);}
+.user-info-text p{font-size:11px;color:var(--text3);}
+.logout-btn{margin-left:auto;background:none;border:none;font-size:17px;cursor:pointer;color:var(--text3);transition:color .2s;}.logout-btn:hover{color:var(--red);}
 
 /* ── MAIN ── */
 .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
@@ -362,65 +374,28 @@ body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text);
 <div class="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-icon">🎓</div>
-    <h2>NextGen</h2>
+    <h2>NextGen Technologies</h2>
   </div>
   <nav class="sb-nav">
-    <div class="sb-group">
-      <div class="sb-group-header active-group open" onclick="tog(this)">
-        <div class="gh-left"><span class="gh-icon">🏠</span>Home</div>
-        <span class="gh-arrow">▼</span>
-      </div>
-      <div class="sb-children open">
-        <a class="sb-child" href="dashboard.html">Admin</a>
-        <a class="sb-child active" href="users.html">Users</a>
-      </div>
-    </div>
-    <div class="sb-group">
-      <div class="sb-group-header" onclick="tog(this)">
-        <div class="gh-left"><span class="gh-icon">🎓</span>Students</div>
-        <span class="gh-arrow">▼</span>
-      </div>
-      <div class="sb-children">
-        <a class="sb-child" href="students.html">All Students</a>
-      </div>
-    </div>
-    <div class="sb-group">
-      <div class="sb-group-header" onclick="tog(this)">
-        <div class="gh-left"><span class="gh-icon">👨‍🏫</span>Teachers</div>
-        <span class="gh-arrow">▼</span>
-      </div>
-      <div class="sb-children">
-        <a class="sb-child" href="#">All Teachers</a>
-        <a class="sb-child" href="#">Add Teacher</a>
-      </div>
-    </div>
-    <a class="sb-single" href="#"><span class="s-icon">📚</span>Library</a>
-    <div class="sb-group">
-      <div class="sb-group-header" onclick="tog(this)">
-        <div class="gh-left"><span class="gh-icon">👤</span>Account</div>
-        <span class="gh-arrow">▼</span>
-      </div>
-      <div class="sb-children">
-        <a class="sb-child" href="#">Profile</a>
-        <a class="sb-child" href="settings.html">Settings</a>
-      </div>
-    </div>
-    <a class="sb-single" href="courses.html"><span class="s-icon">🖥️</span>Class</a>
-    <a class="sb-single" href="courses.html"><span class="s-icon">📖</span>Subject</a>
-    <a class="sb-single" href="#"><span class="s-icon">✅</span>Attendance</a>
-    <div class="sb-group">
-      <div class="sb-group-header" onclick="tog(this)">
-        <div class="gh-left"><span class="gh-icon">📝</span>Exam</div>
-        <span class="gh-arrow">▼</span>
-      </div>
-      <div class="sb-children">
-        <a class="sb-child" href="#">Schedule</a>
-        <a class="sb-child" href="#">Results</a>
-      </div>
-    </div>
-    <a class="sb-single" href="#"><span class="s-icon">📢</span>Notice</a>
-    <a class="sb-single" href="certificates.html"><span class="s-icon">📜</span>Certificates</a>
+    <div class="sb-label">MAIN</div>
+    <a class="sb-link" href="dashboard.html"><span class="s-icon">📊</span>Dashboard</a>
+    <div class="sb-label">MANAGEMENT</div>
+    <a class="sb-link active" href="users.html"><span class="s-icon">👥</span>User Management</a>
+    <a class="sb-link" href="students.html"><span class="s-icon">🎓</span>Students<span class="sb-badge">5</span></a>
+    <a class="sb-link" href="student-registration.html"><span class="s-icon">📋</span>Registration</a>
+    <div class="sb-label">TRAINING</div>
+    <a class="sb-link" href="courses.html"><span class="s-icon">📚</span>Courses</a>
+    <a class="sb-link" href="certificates.html"><span class="s-icon">📜</span>Certificates<span class="sb-badge green">3</span></a>
+    <div class="sb-label">SYSTEM</div>
+    <a class="sb-link" href="attendance.html"><span class="s-icon">✅</span>Attendance</a>
+    <a class="sb-link" href="notices.html"><span class="s-icon">📢</span>Notices</a>
+    <a class="sb-link" href="settings.html"><span class="s-icon">⚙️</span>Settings</a>
   </nav>
+  <div class="sidebar-user">
+    <div class="user-av" id="sb-av">AD</div>
+    <div class="user-info-text"><h4 id="sb-name">Admin User</h4><p id="sb-role">Administrator</p></div>
+    <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+  </div>
 </div>
 
 <!-- MAIN -->
