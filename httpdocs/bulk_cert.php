@@ -170,8 +170,10 @@ if ($act === 'upload') {
 /* ── SEND ALL ─────────────────────────────────────────────── */
 elseif ($act === 'send_all') {
     startSess();
-    $rows = $_SESSION['bulk_cert_rows'] ?? [];
-    if (empty($rows)) fail('No data in session. Upload file again.');
+    // Prefer rows from POST body (includes any admin edits), fallback to session
+    $bodyRows = $b['rows'] ?? null;
+    $rows = (!empty($bodyRows) && is_array($bodyRows)) ? $bodyRows : ($_SESSION['bulk_cert_rows'] ?? []);
+    if (empty($rows)) fail('No data found. Upload file again.');
 
     $b            = body();
     $orgName      = clean($b['organisation']  ?? 'NextGen Technologies');

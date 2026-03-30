@@ -111,6 +111,19 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
 .alert.success{background:#D1FAE5;color:#065F46;}
 .alert.error{background:#FEE2E2;color:#991B1B;}
 .alert.info{background:#EDE9FE;color:#5B21B6;}
+
+/* Edit Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;}
+.modal-overlay.hidden{display:none;}
+.modal-box{background:var(--white);border-radius:16px;width:480px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-head h3{font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3);line-height:1;}
+.modal-close:hover{color:var(--red);}
+.modal-body{padding:20px 22px;}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
+.btn-edit{padding:5px 11px;border-radius:7px;border:1.5px solid var(--border);background:var(--white);font-size:12px;font-weight:700;cursor:pointer;color:var(--purple);transition:all .15s;}
+.btn-edit:hover{background:var(--purple-bg);border-color:var(--purple-lt);}
 </style>
 </head>
 <body>
@@ -253,6 +266,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
                 <th>Grade</th>
                 <th>Issue Date</th>
                 <th>Status</th>
+                <th>Edit</th>
               </tr>
             </thead>
             <tbody id="previewBody"></tbody>
@@ -285,6 +299,30 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- Edit Certificate Modal -->
+<div id="editModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>✏️ Edit Certificate Details</h3>
+      <button class="modal-close" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editIndex">
+      <div class="fg"><label>Student Name</label><input type="text" id="edit_name" placeholder="Full name"></div>
+      <div class="fg"><label>Email Address</label><input type="email" id="edit_email" placeholder="email@example.com"></div>
+      <div class="fg"><label>Course / Workshop Name</label><input type="text" id="edit_course" placeholder="Leave blank to use global setting"></div>
+      <div class="fg-row">
+        <div class="fg"><label>Grade / Result</label><input type="text" id="edit_grade" placeholder="e.g. Pass, Distinction"></div>
+        <div class="fg"><label>Issue Date</label><input type="date" id="edit_date"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeEdit()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">💾 Save Changes</button>
+    </div>
   </div>
 </div>
 
@@ -362,13 +400,46 @@ function showPreview(rows) {
       <td style="color:var(--text3)">${i+1}</td>
       <td>${esc(r.name)}</td>
       <td style="color:var(--purple)">${esc(r.email)}</td>
-      <td>${esc(r.course_name || 'General Training')}</td>
-      <td>${esc(r.grade || 'Pass')}</td>
-      <td>${esc(r.issue_date || '')}</td>
-      <td><span class="badge ${r._error ? 'failed' : 'pending'}">${r._error ? 'Error' : 'Ready'}</span></td>
+      <td style="color:var(--text2)">${esc(r.course_name) || '<span style="color:var(--text3);font-style:italic">global</span>'}</td>
+      <td style="color:var(--text2)">${esc(r.grade) || '<span style="color:var(--text3);font-style:italic">global</span>'}</td>
+      <td style="color:var(--text2)">${esc(r.issue_date) || '<span style="color:var(--text3);font-style:italic">global</span>'}</td>
+      <td><span class="badge ${r._error ? 'failed' : 'pending'}">${r._error ? '⚠ Error' : 'Ready'}</span></td>
+      <td><button class="btn-edit" onclick="editRow(${i})">✏️ Edit</button></td>
     </tr>
   `).join('');
 }
+
+function editRow(i) {
+  const r = parsedRows[i];
+  document.getElementById('editIndex').value = i;
+  document.getElementById('edit_name').value   = r.name        || '';
+  document.getElementById('edit_email').value  = r.email       || '';
+  document.getElementById('edit_course').value = r.course_name || '';
+  document.getElementById('edit_grade').value  = r.grade       || '';
+  document.getElementById('edit_date').value   = r.issue_date  || '';
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
+function closeEdit() {
+  document.getElementById('editModal').classList.add('hidden');
+}
+
+function saveEdit() {
+  const i = parseInt(document.getElementById('editIndex').value);
+  parsedRows[i].name        = document.getElementById('edit_name').value.trim();
+  parsedRows[i].email       = document.getElementById('edit_email').value.trim();
+  parsedRows[i].course_name = document.getElementById('edit_course').value.trim();
+  parsedRows[i].grade       = document.getElementById('edit_grade').value.trim();
+  parsedRows[i].issue_date  = document.getElementById('edit_date').value;
+  if (parsedRows[i].name && parsedRows[i].email) delete parsedRows[i]._error;
+  closeEdit();
+  showPreview(parsedRows);
+}
+
+// Close modal on overlay click
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEdit();
+});
 
 async function sendAll() {
   const btn = document.getElementById('sendBtn');
@@ -386,7 +457,8 @@ async function sendAll() {
         cert_type:     document.getElementById('cfg_type').value,
         course_name:   document.getElementById('cfg_course').value.trim(),
         grade:         document.getElementById('cfg_grade').value.trim(),
-        issue_date:    document.getElementById('cfg_issue_date').value
+        issue_date:    document.getElementById('cfg_issue_date').value,
+        rows:          parsedRows
       })
     });
     const j = await r.json();
