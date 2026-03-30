@@ -14,6 +14,7 @@ cors();
 $admin = needAdmin();
 $act   = $_GET['action'] ?? '';
 $pdo   = db();
+$b     = body();
 
 /* ── TEMPLATE DOWNLOAD ───────────────────────────────────── */
 if ($act === 'template') {
