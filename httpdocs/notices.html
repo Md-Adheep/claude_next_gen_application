@@ -142,65 +142,28 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
 <div class="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-icon">🎓</div>
-    <h2>NextGen</h2>
+    <h2>NextGen Technologies</h2>
   </div>
   <nav class="sb-nav">
-    <div class="sb-group">
-      <div class="sb-group-header active-group open" onclick="tog(this)">
-        <div class="gh-left"><span class="gh-icon">🏠</span>Home</div>
-        <span class="gh-arrow">▼</span>
-      </div>
-      <div class="sb-children open">
-        <a class="sb-child" href="dashboard.html">Admin</a>
-        <a class="sb-child" href="users.html">Users</a>
-      </div>
-    </div>
-    <div class="sb-group">
-      <div class="sb-group-header" onclick="tog(this)">
-        <div class="gh-left"><span class="gh-icon">🎓</span>Students</div>
-        <span class="gh-arrow">▼</span>
-      </div>
-      <div class="sb-children">
-        <a class="sb-child" href="students.html">All Students</a>
-      </div>
-    </div>
-    <div class="sb-group">
-      <div class="sb-group-header" onclick="tog(this)">
-        <div class="gh-left"><span class="gh-icon">👨‍🏫</span>Teachers</div>
-        <span class="gh-arrow">▼</span>
-      </div>
-      <div class="sb-children">
-        <a class="sb-child" href="users.html">All Teachers</a>
-        <a class="sb-child" href="users.html">Add Teacher</a>
-      </div>
-    </div>
-    <a class="sb-single" href="#"><span class="s-icon">📚</span>Library</a>
-    <div class="sb-group">
-      <div class="sb-group-header" onclick="tog(this)">
-        <div class="gh-left"><span class="gh-icon">👤</span>Account</div>
-        <span class="gh-arrow">▼</span>
-      </div>
-      <div class="sb-children">
-        <a class="sb-child" href="#">Profile</a>
-        <a class="sb-child" href="settings.html">Settings</a>
-      </div>
-    </div>
-    <a class="sb-single" href="courses.html"><span class="s-icon">🖥️</span>Class</a>
-    <a class="sb-single" href="courses.html"><span class="s-icon">📖</span>Subject</a>
-    <a class="sb-single" href="#"><span class="s-icon">✅</span>Attendance</a>
-    <div class="sb-group">
-      <div class="sb-group-header" onclick="tog(this)">
-        <div class="gh-left"><span class="gh-icon">📝</span>Exam</div>
-        <span class="gh-arrow">▼</span>
-      </div>
-      <div class="sb-children">
-        <a class="sb-child" href="#">Schedule</a>
-        <a class="sb-child" href="#">Results</a>
-      </div>
-    </div>
-    <a class="sb-single active" href="notices.html"><span class="s-icon">📢</span>Notice</a>
-    <a class="sb-single" href="certificates.html"><span class="s-icon">📜</span>Certificates</a>
+    <div class="sb-label">MAIN</div>
+    <a class="sb-link" href="dashboard.html"><span class="s-icon">📊</span>Dashboard</a>
+    <div class="sb-label">MANAGEMENT</div>
+    <a class="sb-link" href="users.html"><span class="s-icon">👥</span>User Management</a>
+    <a class="sb-link" href="students.html"><span class="s-icon">🎓</span>Students</a>
+    <a class="sb-link" href="student-registration.html"><span class="s-icon">📋</span>Registration</a>
+    <div class="sb-label">TRAINING</div>
+    <a class="sb-link" href="courses.html"><span class="s-icon">📚</span>Courses</a>
+    <a class="sb-link" href="certificates.html"><span class="s-icon">📜</span>Certificates</a>
+    <div class="sb-label">SYSTEM</div>
+    <a class="sb-link" href="attendance.html"><span class="s-icon">✅</span>Attendance</a>
+    <a class="sb-link active" href="notices.html"><span class="s-icon">📢</span>Notices</a>
+    <a class="sb-link" href="settings.html"><span class="s-icon">⚙️</span>Settings</a>
   </nav>
+  <div class="sidebar-user">
+    <div class="user-av" id="sb-av">AD</div>
+    <div class="user-info-text"><h4 id="sb-name">Admin User</h4><p id="sb-role">Administrator</p></div>
+    <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+  </div>
 </div>
 
 <!-- MAIN -->
