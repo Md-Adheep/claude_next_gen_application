@@ -190,10 +190,13 @@ elseif ($act === 'send_all') {
             continue;
         }
         try {
-            // Resolve course/grade/date: row value → global setting → default
-            $resolvedCourse = $row['course_name'] ?: ($globalCourse ?: 'General Training');
-            $resolvedGrade  = $row['grade']        ?: ($globalGrade  ?: 'Pass');
-            $resolvedDate   = $row['issue_date']   ?: ($globalDate   ?: date('Y-m-d'));
+            // Resolve all fields: row value → global setting → default
+            $resolvedCourse   = $row['course_name']    ?: ($globalCourse    ?: 'General Training');
+            $resolvedGrade    = $row['grade']           ?: ($globalGrade     ?: 'Pass');
+            $resolvedDate     = $row['issue_date']      ?: ($globalDate      ?: date('Y-m-d'));
+            $resolvedOrg      = !empty($row['org_name'])      ? clean($row['org_name'])      : $orgName;
+            $resolvedDirector = !empty($row['director_name']) ? clean($row['director_name']) : $directorName;
+            $resolvedCertType = !empty($row['cert_type'])     ? clean($row['cert_type'])     : $certType;
             $rd = date_create($resolvedDate);
             $resolvedDate   = $rd ? date_format($rd, 'Y-m-d') : date('Y-m-d');
 
@@ -236,7 +239,7 @@ elseif ($act === 'send_all') {
             $pdo->prepare(
                 'INSERT INTO certificates (student_id,course_id,cert_type,grade,issue_date,organisation,director_name,issued_by,delivery_status)
                  VALUES (?,?,?,?,?,?,?,?,"Pending")'
-            )->execute([$studentId, $courseId, $certType, $resolvedGrade, $resolvedDate, $orgName, $directorName, $admin['id']]);
+            )->execute([$studentId, $courseId, $resolvedCertType, $resolvedGrade, $resolvedDate, $resolvedOrg, $resolvedDirector, $admin['id']]);
             $certId   = $pdo->lastInsertId();
             $certCode = 'CERT-' . str_pad($certId, 6, '0', STR_PAD_LEFT);
 
@@ -245,6 +248,9 @@ elseif ($act === 'send_all') {
             $studentName = htmlspecialchars($row['name']);
             $courseName  = htmlspecialchars($resolvedCourse);
             $grade       = htmlspecialchars($resolvedGrade);
+            $orgName     = $resolvedOrg;
+            $directorName= $resolvedDirector;
+            $certType    = $resolvedCertType;
 
             $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#F4F0FB;font-family:Georgia,serif;">
@@ -293,7 +299,7 @@ elseif ($act === 'send_all') {
   </div>
 </div></body></html>';
 
-            $subject = "Your Certificate — {$row['course_name']} | {$orgName}";
+            $subject = "Your Certificate — {$resolvedCourse} | {$resolvedOrg}";
             $result  = sendMail($row['email'], $row['name'], $subject, $html);
 
             if ($result['ok']) {

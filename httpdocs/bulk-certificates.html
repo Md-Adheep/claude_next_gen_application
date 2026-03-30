@@ -124,6 +124,12 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
 .modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
 .btn-edit{padding:5px 11px;border-radius:7px;border:1.5px solid var(--border);background:var(--white);font-size:12px;font-weight:700;cursor:pointer;color:var(--purple);transition:all .15s;}
 .btn-edit:hover{background:var(--purple-bg);border-color:var(--purple-lt);}
+.apply-row{display:flex;align-items:center;gap:7px;margin-top:5px;}
+.apply-row input[type=checkbox]{width:14px;height:14px;accent-color:var(--purple);cursor:pointer;flex-shrink:0;}
+.apply-row label{font-size:11px;color:var(--text3);font-weight:700;cursor:pointer;user-select:none;}
+.apply-row label:hover{color:var(--purple);}
+.modal-section{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.modal-section:first-child{margin-top:0;}
 </style>
 </head>
 <body>
@@ -304,19 +310,57 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
 
 <!-- Edit Certificate Modal -->
 <div id="editModal" class="modal-overlay hidden">
-  <div class="modal-box">
+  <div class="modal-box" style="max-height:90vh;display:flex;flex-direction:column;">
     <div class="modal-head">
-      <h3>✏️ Edit Certificate Details</h3>
+      <h3>✏️ Edit Certificate — <span id="editLabel" style="color:var(--purple)"></span></h3>
       <button class="modal-close" onclick="closeEdit()">✕</button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" style="overflow-y:auto;flex:1;">
       <input type="hidden" id="editIndex">
+
+      <div class="modal-section">👤 Student Info</div>
       <div class="fg"><label>Student Name</label><input type="text" id="edit_name" placeholder="Full name"></div>
       <div class="fg"><label>Email Address</label><input type="email" id="edit_email" placeholder="email@example.com"></div>
-      <div class="fg"><label>Course / Workshop Name</label><input type="text" id="edit_course" placeholder="Leave blank to use global setting"></div>
+
+      <div class="modal-section">📜 Certificate Details</div>
+      <div class="fg">
+        <label>Course / Workshop Name</label>
+        <input type="text" id="edit_course" placeholder="e.g. IT Workshop 2026">
+        <div class="apply-row"><input type="checkbox" id="apply_course"><label for="apply_course">Apply to all records</label></div>
+      </div>
       <div class="fg-row">
-        <div class="fg"><label>Grade / Result</label><input type="text" id="edit_grade" placeholder="e.g. Pass, Distinction"></div>
-        <div class="fg"><label>Issue Date</label><input type="date" id="edit_date"></div>
+        <div class="fg">
+          <label>Grade / Result</label>
+          <input type="text" id="edit_grade" placeholder="e.g. Pass">
+          <div class="apply-row"><input type="checkbox" id="apply_grade"><label for="apply_grade">Apply to all</label></div>
+        </div>
+        <div class="fg">
+          <label>Issue Date</label>
+          <input type="date" id="edit_date">
+          <div class="apply-row"><input type="checkbox" id="apply_date"><label for="apply_date">Apply to all</label></div>
+        </div>
+      </div>
+
+      <div class="modal-section">🏢 Organisation Details</div>
+      <div class="fg">
+        <label>Organisation Name</label>
+        <input type="text" id="edit_org" placeholder="e.g. NextGen Technologies">
+        <div class="apply-row"><input type="checkbox" id="apply_org" checked><label for="apply_org">Apply to all records</label></div>
+      </div>
+      <div class="fg">
+        <label>Director / Signatory Name</label>
+        <input type="text" id="edit_dir" placeholder="e.g. Dr. John Smith">
+        <div class="apply-row"><input type="checkbox" id="apply_dir" checked><label for="apply_dir">Apply to all records</label></div>
+      </div>
+      <div class="fg">
+        <label>Certificate Type</label>
+        <select id="edit_ctype">
+          <option>Certificate of Completion</option>
+          <option>Certificate of Achievement</option>
+          <option>Certificate of Participation</option>
+          <option>Certificate of Excellence</option>
+        </select>
+        <div class="apply-row"><input type="checkbox" id="apply_ctype" checked><label for="apply_ctype">Apply to all records</label></div>
       </div>
     </div>
     <div class="modal-foot">
@@ -411,12 +455,19 @@ function showPreview(rows) {
 
 function editRow(i) {
   const r = parsedRows[i];
-  document.getElementById('editIndex').value = i;
-  document.getElementById('edit_name').value   = r.name        || '';
-  document.getElementById('edit_email').value  = r.email       || '';
-  document.getElementById('edit_course').value = r.course_name || '';
-  document.getElementById('edit_grade').value  = r.grade       || '';
-  document.getElementById('edit_date').value   = r.issue_date  || '';
+  document.getElementById('editIndex').value    = i;
+  document.getElementById('editLabel').textContent = `Record ${i+1} of ${parsedRows.length}`;
+  document.getElementById('edit_name').value    = r.name         || '';
+  document.getElementById('edit_email').value   = r.email        || '';
+  document.getElementById('edit_course').value  = r.course_name  || document.getElementById('cfg_course').value || '';
+  document.getElementById('edit_grade').value   = r.grade        || document.getElementById('cfg_grade').value  || '';
+  document.getElementById('edit_date').value    = r.issue_date   || document.getElementById('cfg_issue_date').value || '';
+  document.getElementById('edit_org').value     = r.org_name     || document.getElementById('cfg_org').value       || '';
+  document.getElementById('edit_dir').value     = r.director_name|| document.getElementById('cfg_director').value  || '';
+  document.getElementById('edit_ctype').value   = r.cert_type    || document.getElementById('cfg_type').value      || '';
+  // Reset apply-to-all checkboxes (org/dir/ctype default checked)
+  ['apply_course','apply_grade','apply_date'].forEach(id => document.getElementById(id).checked = false);
+  ['apply_org','apply_dir','apply_ctype'].forEach(id => document.getElementById(id).checked = true);
   document.getElementById('editModal').classList.remove('hidden');
 }
 
@@ -425,12 +476,36 @@ function closeEdit() {
 }
 
 function saveEdit() {
-  const i = parseInt(document.getElementById('editIndex').value);
-  parsedRows[i].name        = document.getElementById('edit_name').value.trim();
-  parsedRows[i].email       = document.getElementById('edit_email').value.trim();
-  parsedRows[i].course_name = document.getElementById('edit_course').value.trim();
-  parsedRows[i].grade       = document.getElementById('edit_grade').value.trim();
-  parsedRows[i].issue_date  = document.getElementById('edit_date').value;
+  const i   = parseInt(document.getElementById('editIndex').value);
+  const val = id => document.getElementById(id).value.trim();
+  const chk = id => document.getElementById(id).checked;
+
+  // Personal fields — always per-row
+  parsedRows[i].name  = val('edit_name');
+  parsedRows[i].email = val('edit_email');
+
+  // Fields with apply-to-all
+  const fields = [
+    { val: 'edit_course', key: 'course_name',   apply: 'apply_course', global: 'cfg_course'    },
+    { val: 'edit_grade',  key: 'grade',          apply: 'apply_grade',  global: 'cfg_grade'     },
+    { val: 'edit_date',   key: 'issue_date',     apply: 'apply_date',   global: 'cfg_issue_date'},
+    { val: 'edit_org',    key: 'org_name',       apply: 'apply_org',    global: 'cfg_org'       },
+    { val: 'edit_dir',    key: 'director_name',  apply: 'apply_dir',    global: 'cfg_director'  },
+    { val: 'edit_ctype',  key: 'cert_type',      apply: 'apply_ctype',  global: 'cfg_type'      },
+  ];
+
+  fields.forEach(f => {
+    const v = val(f.val);
+    if (chk(f.apply)) {
+      // Apply to every row
+      parsedRows.forEach(r => r[f.key] = v);
+      // Also sync global settings form
+      document.getElementById(f.global).value = v;
+    } else {
+      parsedRows[i][f.key] = v;
+    }
+  });
+
   if (parsedRows[i].name && parsedRows[i].email) delete parsedRows[i]._error;
   closeEdit();
   showPreview(parsedRows);
