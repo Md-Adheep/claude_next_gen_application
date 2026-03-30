@@ -38,12 +38,31 @@ if ($act === 'upload') {
     if (!in_array($ext, $allowed)) fail('Only CSV and XLSX files are supported. XLS (old format) is not supported.');
     if ($file['size'] > 5 * 1024 * 1024) fail('File too large. Max 5MB.');
 
+    // Detect if a row looks like the actual header row (has name + email columns)
+    $nameAliases  = ['name','full name','student name','full_name','student_name','name of the student','name of student'];
+    $emailAliases = ['email','email address','e-mail','email id','e-mail id','emailid','mail id','mail'];
+    $looksLikeHeader = function(array $row) use ($nameAliases, $emailAliases): bool {
+        $hasName = $hasEmail = false;
+        foreach ($row as $cell) {
+            $kl = strtolower(trim((string)$cell));
+            if (in_array($kl, $nameAliases))  $hasName  = true;
+            if (in_array($kl, $emailAliases)) $hasEmail = true;
+        }
+        return $hasName && $hasEmail;
+    };
+
     $rows = [];
     if ($ext === 'csv') {
         $handle = fopen($file['tmp_name'], 'r');
         $header = null;
         while (($line = fgetcsv($handle)) !== false) {
-            if (!$header) { $header = array_map('trim', $line); continue; }
+            if (!$header) {
+                // Skip title/merged rows until we find the real header
+                if ($looksLikeHeader($line)) {
+                    $header = array_map('trim', $line);
+                }
+                continue;
+            }
             if (count($line) < 2) continue;
             $rows[] = array_combine($header, array_pad($line, count($header), ''));
         }
@@ -90,7 +109,11 @@ if ($act === 'upload') {
             }
             if (!$header) {
                 ksort($rowData);
-                $header = array_values($rowData);
+                $potential = array_values($rowData);
+                // Skip title rows until we find the real header row
+                if ($looksLikeHeader($potential)) {
+                    $header = $potential;
+                }
                 continue;
             }
             if (count(array_filter($rowData)) === 0) continue;
