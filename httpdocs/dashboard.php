@@ -44,4 +44,23 @@ elseif ($act === 'activity') {
     ok($st->fetchAll());
 }
 
+elseif ($act === 'gender_stats') {
+    $rows = $pdo->query('SELECT gender, COUNT(*) AS cnt FROM students GROUP BY gender')->fetchAll();
+    $out = ['Male'=>0,'Female'=>0,'Other'=>0];
+    foreach ($rows as $r) { if (isset($out[$r['gender']])) $out[$r['gender']] = (int)$r['cnt']; }
+    ok($out);
+}
+
+elseif ($act === 'enrollment_trend') {
+    $period = $_GET['period'] ?? 'monthly';
+    if ($period === 'weekly') {
+        $st = $pdo->query("SELECT DATE_FORMAT(registered_at,'%a') AS label, COUNT(*) AS cnt FROM students WHERE registered_at >= DATE_SUB(NOW(),INTERVAL 7 DAY) GROUP BY DATE(registered_at) ORDER BY DATE(registered_at)");
+    } elseif ($period === 'yearly') {
+        $st = $pdo->query("SELECT YEAR(registered_at) AS label, COUNT(*) AS cnt FROM students GROUP BY YEAR(registered_at) ORDER BY YEAR(registered_at)");
+    } else {
+        $st = $pdo->query("SELECT DATE_FORMAT(registered_at,'%b') AS label, COUNT(*) AS cnt FROM students WHERE registered_at >= DATE_SUB(NOW(),INTERVAL 12 MONTH) GROUP BY DATE_FORMAT(registered_at,'%Y-%m') ORDER BY MIN(registered_at)");
+    }
+    ok($st->fetchAll());
+}
+
 else fail('Unknown action.', 404);

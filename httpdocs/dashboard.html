@@ -166,7 +166,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
           <h3>Enrollment Overview</h3>
           <div class="ch-right">
             <div class="legend"><div class="leg"><div class="leg-dot" style="background:var(--purple);"></div>Users</div><div class="leg"><div class="leg-dot" style="background:var(--teal);"></div>Students</div></div>
-            <select class="period-sel"><option>Monthly</option><option>Weekly</option><option>Yearly</option></select>
+            <select class="period-sel" onchange="loadEnrollmentChart(this.value)"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="yearly">Yearly</option></select>
           </div>
         </div>
         <div style="padding:0 18px 16px;"><canvas id="waveChart" height="155" style="width:100%;display:block;"></canvas></div>
@@ -178,7 +178,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
             <canvas id="donutChart" width="170" height="170"></canvas>
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
               <div style="font-size:11px;color:var(--text3);font-weight:600;">Total</div>
-              <div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.1;">248</div>
+              <div id="donutTotal" style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.1;">0</div>
             </div>
           </div>
           <div style="display:flex;gap:18px;">
@@ -257,20 +257,93 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);disp
 })();
 function logout(){sessionStorage.removeItem('ng_user');window.location.href='login.html';}
 
-// Wave chart
-(function(){
-  const canvas=document.getElementById('waveChart'),ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1;
-  function resize(){const W=canvas.parentElement.clientWidth,H=155;canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);draw(W,H);}
-  function draw(W,H){ctx.clearRect(0,0,W,H);const pL=44,pR=16,pT=10,pB=28,cW=W-pL-pR,cH=H-pT-pB;
-    [0,25,50,75,100].forEach(v=>{const y=pT+cH-(v/100)*cH;ctx.font='10.5px Nunito';ctx.fillStyle='#C4C4C4';ctx.textAlign='right';ctx.fillText(v===0?'0':v+'k',pL-7,y+4);ctx.beginPath();ctx.strokeStyle='#F3F4F6';ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.moveTo(pL,y);ctx.lineTo(pL+cW,y);ctx.stroke();ctx.setLineDash([]);});
-    const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];ctx.textAlign='center';ctx.fillStyle='#9CA3AF';days.forEach((d,i)=>{ctx.fillText(d,pL+(i/(days.length-1))*cW,H-7);});
-    function wave(amp,freq,phase,color){const N=100,pts=Array.from({length:N},(_,i)=>{const t=i/(N-1);return{x:pL+t*cW,y:pT+cH*(0.5-amp*Math.sin(2*Math.PI*freq*t+phase))};});ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';pts.forEach((p,i)=>{if(i===0){ctx.moveTo(p.x,p.y);return;}const pp=pts[i-1],cpx=(pp.x+p.x)/2;ctx.bezierCurveTo(cpx,pp.y,cpx,p.y,p.x,p.y);});ctx.stroke();}
-    wave(0.38,2.1,0,'#7C3AED');wave(0.38,2.1,Math.PI*0.55,'#06B6D4');}
-  resize();new ResizeObserver(resize).observe(canvas.parentElement);
-})();
+// Enrollment bar chart - real data
+let _enrollData = [];
+(function(){ new ResizeObserver(()=>drawEnrollChart()).observe(document.getElementById('waveChart').parentElement); })();
 
-// Donut
-(function(){const c=document.getElementById('donutChart'),ctx=c.getContext('2d'),dpr=window.devicePixelRatio||1;c.width=170*dpr;c.height=170*dpr;ctx.scale(dpr,dpr);const cx=85,cy=85,oR=72,iR=50,gap=0.035,sa=-Math.PI/2;const me=sa+(0.62-gap)*2*Math.PI;ctx.beginPath();ctx.arc(cx,cy,oR,sa+gap,me);ctx.arc(cx,cy,iR,me,sa+gap,true);ctx.closePath();const g1=ctx.createLinearGradient(0,0,170,170);g1.addColorStop(0,'#7C3AED');g1.addColorStop(1,'#A78BFA');ctx.fillStyle=g1;ctx.fill();const fs=me+gap*2,fe=sa+2*Math.PI-gap;ctx.beginPath();ctx.arc(cx,cy,oR,fs,fe);ctx.arc(cx,cy,iR,fe,fs,true);ctx.closePath();const g2=ctx.createLinearGradient(170,0,0,170);g2.addColorStop(0,'#F97316');g2.addColorStop(1,'#FCD34D');ctx.fillStyle=g2;ctx.fill();})();
+async function loadEnrollmentChart(period) {
+  period = period || 'monthly';
+  const r = await fetch('dashboard.php?action=enrollment_trend&period='+period, {credentials:'include'});
+  const j = await r.json();
+  if (!j.success) return;
+  _enrollData = j.data;
+  drawEnrollChart();
+}
+
+function drawEnrollChart() {
+  const canvas = document.getElementById('waveChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d'), dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth, H = 155;
+  canvas.width = W*dpr; canvas.height = H*dpr;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  const pL=44,pR=16,pT=10,pB=28,cW=W-pL-pR,cH=H-pT-pB;
+  if (!_enrollData.length) {
+    ctx.font='13px Nunito'; ctx.fillStyle='#9CA3AF'; ctx.textAlign='center';
+    ctx.fillText('No enrollment data yet', W/2, H/2); return;
+  }
+  const maxVal = Math.max(..._enrollData.map(d=>parseInt(d.cnt)),1);
+  const niceMax = Math.ceil(maxVal/5)*5 || 5;
+  [0,25,50,75,100].forEach(pct=>{
+    const v=Math.round(niceMax*pct/100), y=pT+cH-(pct/100)*cH;
+    ctx.font='10.5px Nunito'; ctx.fillStyle='#C4C4C4'; ctx.textAlign='right';
+    ctx.fillText(v, pL-7, y+4);
+    ctx.beginPath(); ctx.strokeStyle='#F3F4F6'; ctx.lineWidth=1;
+    ctx.setLineDash([3,4]); ctx.moveTo(pL,y); ctx.lineTo(pL+cW,y); ctx.stroke(); ctx.setLineDash([]);
+  });
+  const n=_enrollData.length, slot=cW/n, barW=Math.max(8,slot*0.5);
+  _enrollData.forEach((d,i)=>{
+    const x=pL+slot*i+slot/2, barH=Math.max(2,(parseInt(d.cnt)/niceMax)*cH), y=pT+cH-barH;
+    const grad=ctx.createLinearGradient(0,y,0,pT+cH);
+    grad.addColorStop(0,'#7C3AED'); grad.addColorStop(1,'#A78BFA');
+    ctx.fillStyle=grad;
+    const r2=Math.min(3,barW/2);
+    ctx.beginPath();
+    ctx.moveTo(x-barW/2+r2,y); ctx.lineTo(x+barW/2-r2,y);
+    ctx.quadraticCurveTo(x+barW/2,y,x+barW/2,y+r2);
+    ctx.lineTo(x+barW/2,pT+cH); ctx.lineTo(x-barW/2,pT+cH);
+    ctx.lineTo(x-barW/2,y+r2); ctx.quadraticCurveTo(x-barW/2,y,x-barW/2+r2,y);
+    ctx.closePath(); ctx.fill();
+    ctx.font='10px Nunito'; ctx.fillStyle='#9CA3AF'; ctx.textAlign='center';
+    ctx.fillText(d.label, x, H-7);
+  });
+}
+
+// Donut - real gender data
+async function loadDonut() {
+  const r = await fetch('dashboard.php?action=gender_stats', {credentials:'include'});
+  const j = await r.json();
+  if (!j.success) return;
+  const male = j.data.Male||0, female = j.data.Female||0, other = j.data.Other||0;
+  const total = male + female + other;
+  document.getElementById('donutTotal').textContent = total;
+  drawDonut(male, female + other, total);
+}
+
+function drawDonut(male, female, total) {
+  const c=document.getElementById('donutChart'),ctx=c.getContext('2d'),dpr=window.devicePixelRatio||1;
+  c.width=170*dpr; c.height=170*dpr; ctx.scale(dpr,dpr);
+  const cx=85,cy=85,oR=72,iR=50,gap=0.035,sa=-Math.PI/2;
+  if (total===0) {
+    ctx.beginPath(); ctx.arc(cx,cy,oR,0,2*Math.PI); ctx.arc(cx,cy,iR,2*Math.PI,0,true);
+    ctx.closePath(); ctx.fillStyle='#E5E7EB'; ctx.fill(); return;
+  }
+  const maleRatio = male/total;
+  const me = sa+(maleRatio-gap)*2*Math.PI;
+  if (maleRatio > gap) {
+    ctx.beginPath(); ctx.arc(cx,cy,oR,sa+gap,me); ctx.arc(cx,cy,iR,me,sa+gap,true); ctx.closePath();
+    const g1=ctx.createLinearGradient(0,0,170,170);
+    g1.addColorStop(0,'#7C3AED'); g1.addColorStop(1,'#A78BFA'); ctx.fillStyle=g1; ctx.fill();
+  }
+  if (maleRatio < 1-gap) {
+    const fs=me+gap*2, fe=sa+2*Math.PI-gap;
+    ctx.beginPath(); ctx.arc(cx,cy,oR,fs,fe); ctx.arc(cx,cy,iR,fe,fs,true); ctx.closePath();
+    const g2=ctx.createLinearGradient(170,0,0,170);
+    g2.addColorStop(0,'#F97316'); g2.addColorStop(1,'#FCD34D'); ctx.fillStyle=g2; ctx.fill();
+  }
+}
 
 const COLORS=['#7C3AED','#06B6D4','#F97316','#10B981','#EF4444','#8B5CF6'];
 function avColor(n){let h=0;for(const c of n)h=(h+c.charCodeAt(0))%COLORS.length;return COLORS[h];}
@@ -391,6 +464,7 @@ function showToast(msg, type='success') {
   if (j.data.role !== 'Admin') { location.href='user-dashboard.html'; return; }
   document.querySelectorAll('.tb-info span, #sidebarName').forEach(el => el.textContent = j.data.name);
   loadStats(); loadUsers(); loadTopStudents(); loadActivity();
+  loadEnrollmentChart('monthly'); loadDonut();
 })();
 </script>
 </body>
